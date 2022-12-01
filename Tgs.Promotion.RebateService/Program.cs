@@ -9,9 +9,13 @@ using OpenTelemetry.Trace;
 
 using RebateService.Repositories.DependencyInjection;
 
+using Tgs.Promotion.RebateService.MessageQueue;
 using Tgs.Services.Rebate.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration
+    .AddJsonFile("/config/appsettings.json", true);
 
 builder.Logging
     .AddOpenTelemetry(options =>
@@ -39,6 +43,19 @@ builder.Services
     .AddPromotionRebate()
     .AddPromotionRebateRepositories((_, dbOptionsBuilder) => dbOptionsBuilder
         .UseNpgsql("name=Tgs"));
+
+builder.Services
+    .AddMessageQueue()
+    .AddNatsMessageQueue(natsConfiguration => natsConfiguration
+        .ConfigQueueOptions((options, sp) =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+
+            options.Url = config.GetConnectionString("Nats")!;
+        })
+        .AddProcessor<RebateSettingProcessor>("tgs.promotion.turnoverrebate.setting", "tgs.promotion.turnoverrebate.setting")
+        .AddProcessor<RebateSettingProcessor>("tgs.promotion.turnoverrebateweekly.setting", "tgs.promotion.turnoverrebateweekly.setting"))
+        .AddNatsGlobPatternExchange("*");
 
 builder.Services
     .AddProfileViewer()

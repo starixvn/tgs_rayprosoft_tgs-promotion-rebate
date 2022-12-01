@@ -7,6 +7,8 @@ public static class PromotionRebateUtility
 {
     public static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
     {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        WriteIndented = false,
+        Converters = { new JsonStringEnumConverter() }
     };
 }
