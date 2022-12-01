@@ -4,7 +4,7 @@ include:
     file: GitLab/Templates/gitlab-job-templates.yml
 
 variables:
-  ImageName: pgtgs/promotion/rebate
+  ImageName: pgtgs/promotion-rebate
   TgsSettingKey: promotion-rebate
   HelmTemplateFolderName: promotion-rebate
   BuildCacheKey: Tgs.PromotionRebate.$CI_PIPELINE_IID
