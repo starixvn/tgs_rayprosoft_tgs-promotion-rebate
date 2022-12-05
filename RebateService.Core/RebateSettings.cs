@@ -5,7 +5,8 @@ public record RebateSettings(
    GameType? GameType,
    IEnumerable<Guid> GameProviderIds,
    [property: JsonPropertyName("turnoverLimit")]
-   decimal? BonusAmountLimit,
+   decimal TurnoverThreshold,
+   decimal BonusAmountLimit,
    decimal Percentage,
    decimal TurnoverMultiple,
    [property: JsonPropertyName("playerAutoJoin")]

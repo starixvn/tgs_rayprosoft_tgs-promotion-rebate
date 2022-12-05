@@ -26,6 +26,7 @@ public class RebateSettingProcessTests
                     "gameProviderIds": [],
                     "turnoverLimit": 20,
                     "turnoverMultiple": 30,
+                    "bonusAmountLimit": 40,
                     "playerAutoJoin": true,
                     "vipLevels": [1],
                     "aaa": "bbb"
@@ -37,6 +38,7 @@ public class RebateSettingProcessTests
             GameType.Slot,
             Array.Empty<Guid>(),
             20M,
+            40M,
             10M,
             30M,
             true,

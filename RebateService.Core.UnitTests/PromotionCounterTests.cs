@@ -8,8 +8,6 @@ using NSubstitute.Core;
 using Tgs.Promotion.Clients;
 using Tgs.Services.Rebate;
 
-using Xunit;
-
 namespace RebateService.Core.UnitTests;
 
 internal static class ExtensionMethods
@@ -326,6 +324,7 @@ public class PromotionCounterTests
                         "gameType": 15,
                         "gameProviderIds": ["{{targetGpId}}"],
                         "turnoverMultiple": 30,
+                        "bonusAmountLimit": 100,
                         "playerAutoJoin": true,
                         "vipLevels": [1]
                     }
@@ -385,7 +384,7 @@ public class PromotionCounterTests
                         "gameType": 15,
                         "gameProviderIds": ["{{targetGpId}}"],
                         "turnoverMultiple": 30,
-                        "turnoverLimit": 5,
+                        "bonusAmountLimit": 5,
                         "playerAutoJoin": true,
                         "vipLevels": [1]
                     }
@@ -416,5 +415,11 @@ public class PromotionCounterTests
         Assert.Single(actual);
         Assert.Equal(expectedBonus, actual.First().Bonus);
         Assert.Equal(expectedBucketAmount, actual.First().BucketAmount);
+    }
+
+    [Fact(Skip = "未實作")]
+    public void 活動反水計算如果有效投注未達門檻不會計算進去()
+    {
+        Assert.Fail("未實作");
     }
 }
