@@ -24,9 +24,9 @@ public class RebateSettingProcessTests
                     "percentage": 10,
                     "gameType": 15,
                     "gameProviderIds": [],
-                    "bonusAmountLimit": 20,
+                    "turnoverLimit": 20,
                     "turnoverMultiple": 30,
-                    "defaultJoin": true,
+                    "playerAutoJoin": true,
                     "vipLevels": [1],
                     "aaa": "bbb"
                 }

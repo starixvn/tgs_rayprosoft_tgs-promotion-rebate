@@ -78,9 +78,9 @@ public class PromotionCounterTests
                     "campaignDetail": {
                         "percentage": 10,
                         "gameProviderIds": [],
-                        "bonusAmountLimit": 20,
+                        "turnovoerLimit": 20,
                         "turnoverMultiple": 30,
-                        "defaultJoin": true,
+                        "playerAutoJoin": true,
                         "vipLevels": [1]
                     }
                 }
@@ -199,9 +199,9 @@ public class PromotionCounterTests
                         "percentage": 10,
                         "gameType": 15,
                         "gameProviderIds": [],
-                        "bonusAmountLimit": 20,
+                        "turnoverLimit": 20,
                         "turnoverMultiple": 30,
-                        "defaultJoin": true,
+                        "playerAutoJoin": true,
                         "vipLevels": [1]
                     }
                 }
@@ -262,9 +262,9 @@ public class PromotionCounterTests
                         "percentage": 10,
                         "gameType": 15,
                         "gameProviderIds": ["{{targetGpId}}"],
-                        "bonusAmountLimit": 20,
+                        "turnoverLimit": 20,
                         "turnoverMultiple": 30,
-                        "defaultJoin": true,
+                        "playerAutoJoin": true,
                         "vipLevels": [1]
                     }
                 }
@@ -326,7 +326,7 @@ public class PromotionCounterTests
                         "gameType": 15,
                         "gameProviderIds": ["{{targetGpId}}"],
                         "turnoverMultiple": 30,
-                        "defaultJoin": true,
+                        "playerAutoJoin": true,
                         "vipLevels": [1]
                     }
                 }
@@ -385,8 +385,8 @@ public class PromotionCounterTests
                         "gameType": 15,
                         "gameProviderIds": ["{{targetGpId}}"],
                         "turnoverMultiple": 30,
-                        "bonusAmountLimit": 5,
-                        "defaultJoin": true,
+                        "turnoverLimit": 5,
+                        "playerAutoJoin": true,
                         "vipLevels": [1]
                     }
                 }
