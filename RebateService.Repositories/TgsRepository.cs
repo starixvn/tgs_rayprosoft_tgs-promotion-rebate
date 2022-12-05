@@ -72,7 +72,8 @@ internal class TgsRepository : ITgsRepository
                 BrandId = s.BrandId,
                 BucketAmount = s.BucketAmount,
                 PromotionId = s.PromotionId,
-                Settings = JsonSerializer.Serialize(s.Settings, PromotionRebateUtility.SerializerOptions)
+                Settings = JsonSerializer.Serialize(s.Settings, PromotionRebateUtility.SerializerOptions),
+                TotalTurnover = s.TotalTurnover
             }),
             cancellationToken).ConfigureAwait(false);
 

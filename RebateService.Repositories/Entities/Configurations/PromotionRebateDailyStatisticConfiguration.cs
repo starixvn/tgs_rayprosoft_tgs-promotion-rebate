@@ -31,6 +31,9 @@ namespace RebateService.Repositories.Entities.Configurations
             .HasDefaultValueSql("'{}'::jsonb")
             .HasColumnType("jsonb")
             .HasColumnName("settings");
+            entity.Property(e => e.TotalTurnover)
+            .HasPrecision(18, 6)
+            .HasColumnName("total_turnover");
 
             OnConfigurePartial(entity);
         }

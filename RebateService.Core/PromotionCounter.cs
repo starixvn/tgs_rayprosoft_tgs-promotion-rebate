@@ -50,9 +50,7 @@ internal class PromotionCounter
             group gameRound by new { gameRound.ReportDate, gameRound.PlayerCode } into g
             let totalTurnover = g.Sum(round => round.TotalTurnover)
             let calculateBonus = totalTurnover * _rebateSettings.Percentage / 100M
-            let bonus = calculateBonus > _rebateSettings.BonusAmountLimit
-                ? _rebateSettings.BonusAmountLimit
-                : calculateBonus
+            let bonus = calculateBonus
             select new PromotionRebateSettlement(
                 g.Key.ReportDate,
                 g.Key.PlayerCode,
