@@ -1,6 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
@@ -37,6 +39,10 @@ builder.Services
     .AddJsonOptions(jsonOptions =>
     {
         jsonOptions.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    })
+    .AddMvcOptions(mvcOptions =>
+    {
+        mvcOptions.AddWebApiToolkitFilters();
     });
 
 builder.Services
@@ -45,6 +51,10 @@ builder.Services
         .UseNpgsql("name=Tgs"));
 
 builder.Services
+    .AddPromotionClientServices((promotionOptions, _) =>
+    {
+        promotionOptions.Url = builder.Configuration.GetValue<Uri>("Rebate:PromotionBaseUrl")!;
+    })
     .AddMessageQueue()
     .AddNatsMessageQueue(natsConfiguration => natsConfiguration
         .ConfigQueueOptions((options, sp) =>
@@ -55,7 +65,10 @@ builder.Services
         })
         .AddProcessor<RebateSettingProcessor>("tgs.promotion.turnoverrebate.setting", "tgs.promotion.turnoverrebate.setting")
         .AddProcessor<RebateSettingProcessor>("tgs.promotion.turnoverrebateweekly.setting", "tgs.promotion.turnoverrebateweekly.setting"))
-        .AddNatsGlobPatternExchange("*");
+    .AddInProcessMessageQueue(ipcConfiguration => ipcConfiguration
+        .AddHandler<DailySettlementHandler>("tgs.rebate.ipc.daily-settle"))
+    .AddInProcessGlobPatternExchange("tgs.rebate.ipc.*")
+    .AddNatsGlobPatternExchange("*");
 
 builder.Services
     .AddProfileViewer()
@@ -83,9 +96,24 @@ builder.Services
             && !new[] { "html", "ico", "png", "jpg" }.Any(
                 ext => httpContext.Request.Path.Value.EndsWith($".{ext}")));
 
+builder.Services
+    .AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Player Service",
+            Version = "v1"
+        });
+
+        options.ApplyWebApiToolkitSupport();
+        options.ApplyDisplayNameSchemaId();
+    });
+
 var app = builder.Build();
 
 app.MapControllers();
+app.MapSwagger();
+app.UseSwaggerUI();
 app.MapHealthChecks("/healthz");
 app.MapProfileViewer();
 

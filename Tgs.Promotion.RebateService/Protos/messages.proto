@@ -1,0 +1,9 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Tgs.Promotion.RebateService.Protos";
+
+import "phoenix/protobuf/date.proto";
+
+message DailySettlementRequest{
+    phoenix.protobuf.DateValue report_date = 1;
+}

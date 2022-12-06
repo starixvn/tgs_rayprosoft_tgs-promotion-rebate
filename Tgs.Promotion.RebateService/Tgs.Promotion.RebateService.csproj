@@ -11,7 +11,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="Protos\messages.proto" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="FluentdForward.OpenTelemetry.MessagePack" Version="0.2.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.50.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.4.27">
             <PrivateAssets>all</PrivateAssets>
@@ -23,13 +31,21 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.9" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.9" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.0.0" />
+        <PackageReference Include="PhoenixToolkits.Protobuf.ExtendTypes" Version="0.0.6" />
         <PackageReference Include="ProfileViewer.OpenTelemetry.Exporter" Version="0.2.1" />
-        <PackageReference Include="Tgs.MessageQueue.Nats" Version="2.1.6" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+        <PackageReference Include="Tgs.MessageQueue.InProcess" Version="0.0.4-alpha" />
+        <PackageReference Include="Tgs.MessageQueue.Nats" Version="2.1.7" />
+        <PackageReference Include="Tgs.WebApi.Toolkits" Version="0.1.1" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\RebateService.Core\RebateService.Core.csproj" />
         <ProjectReference Include="..\RebateService.Repositories\RebateService.Repositories.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Protobuf Include="Protos\messages.proto" GrpcServices="None" Access="Internal" />
     </ItemGroup>
 
 </Project>

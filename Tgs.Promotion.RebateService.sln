@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RebateService.Core.UnitTest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RebateService.Repositories", "RebateService.Repositories\RebateService.Repositories.csproj", "{6008DA5E-7806-4F5A-A33E-B1787CA3A079}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.Promotion.RebateService.UnitTests", "Tgs.Promotion.RebateService.UnitTests\Tgs.Promotion.RebateService.UnitTests.csproj", "{5048E181-4E08-4206-87A6-1045848A0498}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tgs.Promotion.RebateService.UnitTests", "Tgs.Promotion.RebateService.UnitTests\Tgs.Promotion.RebateService.UnitTests.csproj", "{5048E181-4E08-4206-87A6-1045848A0498}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
