@@ -20,10 +20,10 @@ internal class TgsRepository : ITgsRepository
         var queryRange = (
             From: new DateTimeOffset(
                 reportDate.ToDateTime(TimeOnly.MinValue),
-                TimeSpan.FromHours(8D)),
+                TimeSpan.FromHours(8D)).ToUniversalTime(),
             To: new DateTimeOffset(
                 reportDate.AddDays(1).ToDateTime(TimeOnly.MinValue),
-                TimeSpan.FromHours(8D)));
+                TimeSpan.FromHours(8D)).ToUniversalTime());
 
         var query = from rebate in _dbContext.PlayerGameRebateAggregates.AsQueryable()
                     where rebate.ReportDate >= queryRange.From
