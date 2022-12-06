@@ -31,4 +31,21 @@ public class ScheduleController : ControllerBase
             request.ToByteArray(),
             HttpContext.RequestAborted).ConfigureAwait(false);
     }
+
+    [HttpPost("settle/{reportDate}")]
+    [SuccessStatusCode(202)]
+    public async ValueTask ExecuteDailySettlementAsync(
+        [FromServices] IMessageSender messageSender,
+        DateOnly reportDate)
+    {
+        var request = new DailySettlementRequest
+        {
+            ReportDate = reportDate
+        };
+
+        await messageSender.PublishAsync(
+            "tgs.rebate.ipc.daily-settle",
+            request.ToByteArray(),
+            HttpContext.RequestAborted).ConfigureAwait(false);
+    }
 }

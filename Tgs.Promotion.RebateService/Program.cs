@@ -34,6 +34,7 @@ builder.Logging
     });
 
 builder.Services
+    .AddDateOnlyTimeOnlyStringConverters()
     .AddRouting(routeOptions => routeOptions.LowercaseUrls = true)
     .AddControllers()
     .AddJsonOptions(jsonOptions =>
@@ -107,6 +108,7 @@ builder.Services
 
         options.ApplyWebApiToolkitSupport();
         options.ApplyDisplayNameSchemaId();
+        options.UseDateOnlyTimeOnlyStringConverters();
     });
 
 var app = builder.Build();
