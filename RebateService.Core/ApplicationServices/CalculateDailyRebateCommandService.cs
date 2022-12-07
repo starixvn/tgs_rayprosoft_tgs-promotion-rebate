@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Tgs.Promotion.Clients;
 using Tgs.ServiceUtility;
 
 namespace Tgs.Services.Rebate.ApplicationServices;
 
-file static class ExtensionMethods
+internal static class ExtensionMethods
 {
 	internal static DateOnly ToDateOnly(this DateTime date)
 		=> DateOnly.FromDateTime(new DateTimeOffset(date).ToOffset(TimeSpan.FromHours(8D)).DateTime);
@@ -45,7 +46,7 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false)!;
 
-		_logger.LogInformation("Match promotions {@promotions}", promotions);
+		_logger.LogInformation("Match promotions {promotions}", JsonSerializer.Serialize(promotions));
 
 		var playerJoinList = await _tgsRepository
 			.QueryPromotionJoinPlayersAsync(promotions.Select(p => p.Id), cancellationToken)
