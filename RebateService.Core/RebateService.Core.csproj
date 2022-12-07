@@ -14,7 +14,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Interactive.Async" Version="6.0.1" />
-    <PackageReference Include="Tgs.Promotion.Client" Version="1.0.35-alpha" />
+    <PackageReference Include="Tgs.Promotion.Client" Version="1.0.36" />
     <PackageReference Include="TGS.ServiceUtility" Version="0.2.0" />
   </ItemGroup>
 

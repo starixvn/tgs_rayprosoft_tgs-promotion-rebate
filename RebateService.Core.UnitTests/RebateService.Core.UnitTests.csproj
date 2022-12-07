@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="JunitXml.TestLogger" Version="3.0.114" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
     <PackageReference Include="NSubstitute" Version="4.4.0" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.15">
       <PrivateAssets>all</PrivateAssets>
@@ -27,7 +27,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="3.1.2">
+    <PackageReference Include="coverlet.collector" Version="3.2.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -39,6 +39,14 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="D:\Users\Phoenix\source\repos\Tgs.Promotion.RebateService\RebateService.Core.UnitTests\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="D:\Users\Phoenix\source\repos\Tgs.Promotion.RebateService\RebateService.Core.UnitTests\.editorconfig" />
   </ItemGroup>
 
 </Project>

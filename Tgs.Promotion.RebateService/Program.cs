@@ -37,14 +37,8 @@ builder.Services
     .AddDateOnlyTimeOnlyStringConverters()
     .AddRouting(routeOptions => routeOptions.LowercaseUrls = true)
     .AddControllers()
-    .AddJsonOptions(jsonOptions =>
-    {
-        jsonOptions.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    })
-    .AddMvcOptions(mvcOptions =>
-    {
-        mvcOptions.AddWebApiToolkitFilters();
-    });
+    .AddJsonOptions(jsonOptions => jsonOptions.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
+	.AddMvcOptions(mvcOptions => mvcOptions.AddWebApiToolkitFilters());
 
 builder.Services
     .AddPromotionRebate()
@@ -53,9 +47,7 @@ builder.Services
 
 builder.Services
     .AddPromotionClientServices((promotionOptions, _) =>
-    {
-        promotionOptions.Url = builder.Configuration.GetValue<Uri>("Rebate:PromotionBaseUrl")!;
-    })
+        promotionOptions.Url = builder.Configuration.GetValue<Uri>("Rebate:PromotionBaseUrl")!)
     .AddMessageQueue()
     .AddNatsMessageQueue(natsConfiguration => natsConfiguration
         .ConfigQueueOptions((options, sp) =>
@@ -68,8 +60,8 @@ builder.Services
         .AddProcessor<RebateSettingProcessor>("tgs.promotion.turnoverrebateweekly.setting", "tgs.promotion.turnoverrebateweekly.setting"))
     .AddInProcessMessageQueue(ipcConfiguration => ipcConfiguration
         .AddHandler<DailySettlementHandler>("tgs.rebate.ipc.daily-settle"))
-    .AddInProcessGlobPatternExchange("tgs.rebate.ipc.*");
-    //.AddNatsGlobPatternExchange("*");
+    .AddInProcessGlobPatternExchange("tgs.rebate.ipc.*")
+    .AddNatsGlobPatternExchange("*");
 
 builder.Services
     .AddProfileViewer()
