@@ -34,6 +34,7 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 	{
 		var statistics = await _tgsRepository
 			.QueryGameRoundStatisticsAsync(command.ReportDate, cancellationToken)
+			.Do(record => _logger.LogInformation("GameRound: {record}", record))
 			.ToLookupAsync(s => s.BrandId, cancellationToken)
 			.ConfigureAwait(false)!;
 
@@ -46,7 +47,7 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false)!;
 
-		_logger.LogInformation("Match promotions {promotions}", JsonSerializer.Serialize(promotions));
+		_logger.LogDebug("Match promotions {promotions}", JsonSerializer.Serialize(promotions));
 
 		var playerJoinList = await _tgsRepository
 			.QueryPromotionJoinPlayersAsync(promotions.Select(p => p.Id), cancellationToken)
