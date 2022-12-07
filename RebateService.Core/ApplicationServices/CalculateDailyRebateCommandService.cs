@@ -34,20 +34,20 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 	{
 		var statistics = await _tgsRepository
 			.QueryGameRoundStatisticsAsync(command.ReportDate, cancellationToken)
-			.Do(record => _logger.LogInformation("GameRound: {record}", record))
+			.Do(record => _logger.LogDebug("GameRound: {record}", record))
 			.ToLookupAsync(s => s.BrandId, cancellationToken)
 			.ConfigureAwait(false)!;
 
 		var promotions = await _promotionServiceClient
 			.ListPromotionsByPromotionTypeAsync("TurnoverRebate", cancellationToken)
+			.Do(info => _logger.LogDebug("Promotion: {info}", info))
 			.Where(info => command.ReportDate.Between(
 				info.EventDuring.From.ToDateOnly(),
 				info.EventDuring.To.ToDateOnly()))
 			.Where(info => statistics.Contains(info.BrandId))
+			.Do(info => _logger.LogDebug("Match Promotion: {info}", info))
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false)!;
-
-		_logger.LogDebug("Match promotions {promotions}", JsonSerializer.Serialize(promotions));
 
 		var playerJoinList = await _tgsRepository
 			.QueryPromotionJoinPlayersAsync(promotions.Select(p => p.Id), cancellationToken)
