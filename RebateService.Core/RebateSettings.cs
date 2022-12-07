@@ -3,7 +3,7 @@
 namespace Tgs.Services.Rebate;
 public record RebateSettings(
    GameType? GameType,
-   IEnumerable<Guid> GameProviderIds,
+   IEnumerable<Guid>? GameProviderIds,
    [property: JsonPropertyName("turnoverLimit")]
    decimal TurnoverThreshold,
    decimal BonusAmountLimit,
