@@ -4,6 +4,7 @@ using NSubstitute;
 using Tgs.Promotion.Clients;
 using Tgs.Services.Rebate;
 using Tgs.Services.Rebate.ApplicationServices;
+using Xunit;
 
 namespace RebateService.Core.UnitTests;
 
@@ -33,5 +34,22 @@ public class CalculateDailyRebateTests
 			.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"));
 		_ = fakeTgsRepository.Received(1)
 			.SavePromotionRebateSettlementsAsync(Arg.Any<IEnumerable<PromotionRebateSettlement>>());
+	}
+
+	[Fact]
+	public void 日期區間比對_Between()
+	{
+		// Arrange
+		var sut = new During(
+			DateTime.Parse("2022-12-06 16:00:00.000000 +00:00"),
+			DateTime.Parse("2022-12-07 16:00:00.000000 +00:00"));
+
+		var queryDate = DateOnly.Parse("2022-12-7");
+
+		// Act
+		var actual = queryDate.Between(sut.From.ToDateOnly(), sut.To.ToDateOnly());
+
+		// Assert
+		Assert.True(actual);
 	}
 }

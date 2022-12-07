@@ -11,7 +11,7 @@ internal static class ExtensionMethods
 		=> DateOnly.FromDateTime(new DateTimeOffset(date).ToOffset(TimeSpan.FromHours(8D)).DateTime);
 
 	internal static bool Between(this DateOnly date, DateOnly from, DateOnly to)
-		=> from >= date && to <= date;
+		=> from <= date && to >= date;
 }
 
 internal class CalculateDailyRebateCommandService : ICommandService<CalculateDailyRebateCommand>
