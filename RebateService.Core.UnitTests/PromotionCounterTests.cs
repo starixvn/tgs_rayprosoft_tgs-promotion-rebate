@@ -72,17 +72,17 @@ public class PromotionCounterTests
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
 			.ReturnRuleJson("""
-                {
-                    "campaignDetail": {
-                        "percentage": 10,
-                        "gameProviderIds": [],
-                        "turnovoerLimit": 20,
-                        "turnoverMultiple": 30,
-                        "playerAutoJoin": true,
-                        "vipLevels": [1]
-                    }
-                }
-                """);
+				{
+					"campaignDetail": {
+						"percentage": 10,
+						"gameProviderIds": [],
+						"turnovoerLimit": 20,
+						"turnoverMultiple": 30,
+						"playerAutoJoin": true,
+						"vipLevels": [1]
+					}
+				}
+				""");
 
 		await sut.InitialAsync();
 
@@ -110,7 +110,7 @@ public class PromotionCounterTests
 		var actual = await sut.ProcessBatchAsync(statistics).ToArrayAsync();
 
 		// Assert
-		Assert.Single(actual);
+		_ = Assert.Single(actual);
 	}
 
 	[Fact]
@@ -132,17 +132,17 @@ public class PromotionCounterTests
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
 			.ReturnRuleJson("""
-                {
-                    "campaignDetail": {
-                        "percentage": 10,
-                        "gameProviderIds": [],
-                        "bonusAmountLimit": 20,
-                        "turnoverMultiple": 30,
-                        "defaultJoin": false,
-                        "vipLevels": [1]
-                    }
-                }
-                """);
+				{
+					"campaignDetail": {
+						"percentage": 10,
+						"gameProviderIds": [],
+						"bonusAmountLimit": 20,
+						"turnoverMultiple": 30,
+						"defaultJoin": false,
+						"vipLevels": [1]
+					}
+				}
+				""");
 
 		await sut.InitialAsync();
 
@@ -192,18 +192,18 @@ public class PromotionCounterTests
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
 			.ReturnRuleJson("""
-                {
-                    "campaignDetail": {
-                        "percentage": 10,
-                        "gameType": 15,
-                        "gameProviderIds": [],
-                        "turnoverLimit": 20,
-                        "turnoverMultiple": 30,
-                        "playerAutoJoin": true,
-                        "vipLevels": [1]
-                    }
-                }
-                """);
+				{
+					"campaignDetail": {
+						"percentage": 10,
+						"gameType": 15,
+						"gameProviderIds": [],
+						"turnoverLimit": 20,
+						"turnoverMultiple": 30,
+						"playerAutoJoin": true,
+						"vipLevels": [1]
+					}
+				}
+				""");
 
 		await sut.InitialAsync();
 
@@ -231,7 +231,7 @@ public class PromotionCounterTests
 		var actual = await sut.ProcessBatchAsync(statistics).ToArrayAsync();
 
 		// Assert
-		Assert.Single(actual);
+		_ = Assert.Single(actual);
 	}
 
 	[Fact]
@@ -255,18 +255,18 @@ public class PromotionCounterTests
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
 			.ReturnRuleJson($$"""
-                {
-                    "campaignDetail": {
-                        "percentage": 10,
-                        "gameType": 15,
-                        "gameProviderIds": ["{{targetGpId}}"],
-                        "turnoverLimit": 20,
-                        "turnoverMultiple": 30,
-                        "playerAutoJoin": true,
-                        "vipLevels": [1]
-                    }
-                }
-                """);
+				{
+					"campaignDetail": {
+						"percentage": 10,
+						"gameType": 15,
+						"gameProviderIds": ["{{targetGpId}}"],
+						"turnoverLimit": 20,
+						"turnoverMultiple": 30,
+						"playerAutoJoin": true,
+						"vipLevels": [1]
+					}
+				}
+				""");
 
 		await sut.InitialAsync();
 
@@ -318,18 +318,18 @@ public class PromotionCounterTests
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
 			.ReturnRuleJson($$"""
-                {
-                    "campaignDetail": {
-                        "percentage": 10,
-                        "gameType": 15,
-                        "gameProviderIds": ["{{targetGpId}}"],
-                        "turnoverMultiple": 30,
-                        "bonusAmountLimit": 100,
-                        "playerAutoJoin": true,
-                        "vipLevels": [1]
-                    }
-                }
-                """);
+				{
+					"campaignDetail": {
+						"percentage": 10,
+						"gameType": 15,
+						"gameProviderIds": ["{{targetGpId}}"],
+						"turnoverMultiple": 30,
+						"bonusAmountLimit": 100,
+						"playerAutoJoin": true,
+						"vipLevels": [1]
+					}
+				}
+				""");
 
 		await sut.InitialAsync();
 
@@ -378,18 +378,18 @@ public class PromotionCounterTests
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
 			.ReturnRuleJson($$"""
-                {
-                    "campaignDetail": {
-                        "percentage": 10,
-                        "gameType": 15,
-                        "gameProviderIds": ["{{targetGpId}}"],
-                        "turnoverMultiple": 30,
-                        "bonusAmountLimit": 5,
-                        "playerAutoJoin": true,
-                        "vipLevels": [1]
-                    }
-                }
-                """);
+				{
+					"campaignDetail": {
+						"percentage": 10,
+						"gameType": 15,
+						"gameProviderIds": ["{{targetGpId}}"],
+						"turnoverMultiple": 30,
+						"bonusAmountLimit": 5,
+						"playerAutoJoin": true,
+						"vipLevels": [1]
+					}
+				}
+				""");
 
 		await sut.InitialAsync();
 
