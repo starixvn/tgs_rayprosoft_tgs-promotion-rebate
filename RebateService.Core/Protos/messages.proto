@@ -1,0 +1,9 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Tgs.Services.Rebate.Protos";
+
+import "phoenix/protobuf/guid.proto";
+
+message BonusTransferRequest {
+    phoenix.protobuf.GuidValue distribute_id = 1;
+}

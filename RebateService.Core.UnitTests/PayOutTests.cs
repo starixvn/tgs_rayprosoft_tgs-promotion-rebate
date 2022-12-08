@@ -1,0 +1,66 @@
+﻿using NSubstitute;
+using Tgs.Promotion.Clients;
+using Tgs.Services.Rebate;
+using Tgs.Services.Rebate.ApplicationServices;
+
+namespace RebateService.Core.UnitTests;
+
+public class PayOutTests
+{
+	[Fact]
+	public async Task 發放已經計算好的反水給玩家()
+	{
+		// Arrange
+		var fakeTgsRepository = Substitute.For<ITgsRepository>();
+		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+
+		var sut = new PayOutCommandService(fakeTgsRepository, fakePromotionServiceClient);
+
+		var command = new PayOutCommand(Guid.NewGuid());
+
+		var distribute = new PromotionRebateDistribute(
+			command.DistributeId,
+			DateOnly.Parse("2022-12-8"),
+			"test1",
+			Guid.NewGuid(),
+			Guid.NewGuid(),
+			100M,
+			10000M,
+			new RebateSettings(
+				null,
+				null,
+				0M,
+				1000M,
+				10M,
+				100M,
+				true,
+				new[] { 1 }));
+		_ = fakeTgsRepository.GetRebateDistributeAsync(Arg.Is(command.DistributeId))
+			.Returns(distribute);
+
+		var planId = Guid.NewGuid();
+		_ = fakePromotionServiceClient.GetPromotionDistributePlanAsync(
+			Arg.Is(distribute.PromotionId),
+			Arg.Is((long)distribute.DistributeDate.DayNumber))
+			.Returns(new PromotionDistributePlanInfo(
+				planId,
+				distribute.BrandId,
+				distribute.PromotionId,
+				distribute.DistributeDate.DayNumber));
+
+		// Act
+		await sut.ExecuteAsync(command);
+
+		// Assert
+		_ = fakePromotionServiceClient.Received(1)
+			.DistributePromotionBonusAsync(
+				Arg.Is(planId),
+				Arg.Is(distribute.PlayerCode),
+				Arg.Is(distribute.Bonus),
+				Arg.Is(distribute.BucketAmount),
+				Arg.Any<string>(),
+				Arg.Is(distribute.Id));
+		_ = fakeTgsRepository.Received(1)
+			.SetPromotionRebateDistributedAsync(Arg.Is(distribute.Id));
+	}
+}

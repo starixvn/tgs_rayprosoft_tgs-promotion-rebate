@@ -1,5 +1,8 @@
-﻿using Tgs.Promotion.Clients;
+﻿using Google.Protobuf;
+using Tgs.MessageQueue;
+using Tgs.Promotion.Clients;
 using Tgs.SerialNumberGenerator;
+using Tgs.Services.Rebate.Protos;
 
 namespace Tgs.Services.Rebate;
 
@@ -8,12 +11,18 @@ internal class PromotionDistributor
 	private readonly PromotionMainInfo _promotionMainInfo;
 	private readonly DateOnly _scheduleDate;
 	private readonly ISerialNumberGenerator _serialNumberGenerator;
+	private readonly IMessageSender _messageSender;
 
-	public PromotionDistributor(PromotionMainInfo promotionMainInfo, DateOnly scheduleDate, ISerialNumberGenerator serialNumberGenerator)
+	public PromotionDistributor(
+		PromotionMainInfo promotionMainInfo,
+		DateOnly scheduleDate,
+		ISerialNumberGenerator serialNumberGenerator,
+		IMessageSender messageSender)
 	{
 		_promotionMainInfo = promotionMainInfo ?? throw new ArgumentNullException(nameof(promotionMainInfo));
 		_scheduleDate = scheduleDate;
 		_serialNumberGenerator = serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
+		_messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
 	}
 
 	public async Task ProcessDistributesAsync(
@@ -31,7 +40,6 @@ internal class PromotionDistributor
 				settle.PlayerCode,
 				settle.BrandId,
 				_promotionMainInfo.Id,
-				settle.TotalTurnover,
 				settle.Bonus,
 				settle.BucketAmount,
 				settle.Settings))
@@ -41,26 +49,19 @@ internal class PromotionDistributor
 			distributes,
 			cancellationToken).ConfigureAwait(false);
 
-		//await Task.WhenAll(distributes.ToAsyncEnumerable()
-		//	.Select(async dist =>
-		//	{
-		//		var hash = dist.DistributeDate.DayNumber;
+		await foreach (var dist in distributes.ToAsyncEnumerable()
+			.ConfigureAwait(false)
+			.WithCancellation(cancellationToken))
+		{
+			var request = new BonusTransferRequest
+			{
+				DistributeId = dist.Id
+			};
 
-		//		var planInfo = await promotionServiceClient.GetPromotionDistributePlanAsync(
-		//			_promotionMainInfo.Id,
-		//			hash,
-		//			cancellationToken).ConfigureAwait(false);
-
-		//		_ = await promotionServiceClient.DistributePromotionBonusAsync(
-		//			planInfo.Id,
-		//			dist.PlayerCode,
-		//			dist.Bonus,
-		//			dist.BucketAmount,
-		//			null,
-		//			dist.Id,
-		//			cancellationToken).ConfigureAwait(false);
-
-		//	})
-		//	.ToEnumerable()).ConfigureAwait(false);
+			await _messageSender.PublishAsync(
+				"tgs.rebate.ipc.payout",
+				request.ToByteArray(),
+				cancellationToken).ConfigureAwait(false);
+		}
 	}
 }

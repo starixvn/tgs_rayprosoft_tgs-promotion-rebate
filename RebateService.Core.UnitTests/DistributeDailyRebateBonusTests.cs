@@ -1,4 +1,5 @@
 ﻿using NSubstitute;
+using Tgs.MessageQueue;
 using Tgs.Promotion.Clients;
 using Tgs.SerialNumberGenerator;
 using Tgs.Services.Rebate;
@@ -37,6 +38,10 @@ public class DistributeDailyRebateBonusTests
 		var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
 		_ = fakeServiceProvider.GetService(Arg.Is(typeof(ISerialNumberGenerator)))
 			.Returns(fakeSerialNumberGenerator);
+
+		var fakeMessageSender = Substitute.For<IMessageSender>();
+		_ = fakeServiceProvider.GetService(Arg.Is(typeof(IMessageSender)))
+			.Returns(fakeMessageSender);
 
 		// Act
 		await sut.ExecuteAsync(command);

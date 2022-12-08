@@ -61,7 +61,8 @@ builder.Services
 		.AddProcessor<RebateSettingProcessor>("tgs.promotion.turnoverrebateweekly.setting", "tgs.promotion.turnoverrebateweekly.setting"))
 	.AddInProcessMessageQueue(ipcConfiguration => ipcConfiguration
 		.AddHandler<DailySettlementHandler>("tgs.rebate.ipc.daily-settle")
-		.AddHandler<DailyDistributeBonusHandler>("tgs.rebate.ipc.daily-bonus"))
+		.AddHandler<DailyDistributeBonusHandler>("tgs.rebate.ipc.daily-bonus")
+		.AddHandler<PayOutBonusHandler>("tgs.rebate.ipc.payout"))
 	.AddInProcessGlobPatternExchange("tgs.rebate.ipc.*")
 	.AddNatsGlobPatternExchange("*");
 

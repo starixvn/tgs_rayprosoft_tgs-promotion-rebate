@@ -155,4 +155,22 @@ internal class TgsRepository : ITgsRepository
 
 		_ = await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 	}
+
+	public ValueTask<PromotionRebateDistribute?> GetRebateDistributeAsync(Guid distributeId, CancellationToken cancellationToken = default)
+		=> _dbContext.PromotionRebateDistributeRows
+			.FindAsync(new object?[] { distributeId }, cancellationToken: cancellationToken)
+			.AsTask()
+			.ToAsyncEnumerable()
+			.Where(row => row is not null)
+			.Select(row => row!)
+			.Select(row => new PromotionRebateDistribute(
+				row.Id,
+				row.DistributeDate,
+				row.PlayerCode,
+				row.BrandId,
+				row.PromotionId,
+				row.Bonus,
+				row.BucketAmount,
+				JsonSerializer.Deserialize<RebateSettings>(row.Settings, PromotionRebateUtility.SerializerOptions)!))
+			.FirstOrDefaultAsync(cancellationToken);
 }

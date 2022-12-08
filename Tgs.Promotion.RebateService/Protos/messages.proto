@@ -3,6 +3,7 @@
 option csharp_namespace = "Tgs.Promotion.RebateService.Protos";
 
 import "phoenix/protobuf/date.proto";
+import "phoenix/protobuf/guid.proto";
 
 message DailySettlementRequest {
     phoenix.protobuf.DateValue report_date = 1;
@@ -10,4 +11,8 @@ message DailySettlementRequest {
 
 message RebateDistributeRequest {
     phoenix.protobuf.DateValue distribute_date = 1;
+}
+
+message BonusTransferRequest {
+    phoenix.protobuf.GuidValue distribute_id = 1;
 }

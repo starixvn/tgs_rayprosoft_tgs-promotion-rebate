@@ -12,6 +12,8 @@ public interface ITgsRepository
 		DateOnly endDate,
 		CancellationToken cancellationToken = default);
 
+	ValueTask<PromotionRebateDistribute?> GetRebateDistributeAsync(Guid distributeId, CancellationToken cancellationToken = default);
+
 	IAsyncEnumerable<PlayerJoinRecord> QueryPromotionJoinPlayersAsync(IEnumerable<Guid> promotions, CancellationToken cancellationToken = default);
 
 	ValueTask SavePromotionRebateDistributesAsync(IEnumerable<PromotionRebateDistribute> distributes, CancellationToken cancellationToken = default);

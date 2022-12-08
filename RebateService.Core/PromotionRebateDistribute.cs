@@ -5,7 +5,6 @@ public record PromotionRebateDistribute(
 	string PlayerCode,
 	Guid BrandId,
 	Guid PromotionId,
-	decimal TotalTurnover,
 	decimal Bonus,
 	decimal BucketAmount,
 	RebateSettings Settings);
