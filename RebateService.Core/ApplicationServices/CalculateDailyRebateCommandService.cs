@@ -1,18 +1,8 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Tgs.Promotion.Clients;
 using Tgs.ServiceUtility;
 
 namespace Tgs.Services.Rebate.ApplicationServices;
-
-internal static class ExtensionMethods
-{
-	internal static DateOnly ToDateOnly(this DateTime date)
-		=> DateOnly.FromDateTime(new DateTimeOffset(date).ToOffset(TimeSpan.FromHours(8D)).DateTime);
-
-	internal static bool Between(this DateOnly date, DateOnly from, DateOnly to)
-		=> from <= date && to >= date;
-}
 
 internal class CalculateDailyRebateCommandService : ICommandService<CalculateDailyRebateCommand>
 {
@@ -38,8 +28,13 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 			.ToLookupAsync(s => s.BrandId, cancellationToken)
 			.ConfigureAwait(false)!;
 
-		var promotions = await _promotionServiceClient
-			.ListPromotionsByPromotionTypeAsync("TurnoverRebate", cancellationToken)
+		var promotions = await new[] {
+			_promotionServiceClient
+				.ListPromotionsByPromotionTypeAsync("TurnoverRebate", cancellationToken),
+			_promotionServiceClient
+				.ListPromotionsByPromotionTypeAsync("TurnoverRebateWeekly", cancellationToken)
+		}.ToAsyncEnumerable()
+			.Merge()
 			.Do(info => _logger.LogDebug("Promotion: {info}", info))
 			.Where(info => command.ReportDate.Between(
 				info.EventDuring.From.ToDateOnly(),

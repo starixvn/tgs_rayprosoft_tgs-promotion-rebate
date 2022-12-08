@@ -41,13 +41,14 @@ builder.Services
 	.AddMvcOptions(mvcOptions => mvcOptions.AddWebApiToolkitFilters());
 
 builder.Services
+	.AddSerialNumberGenerator()
+	.AddPromotionClientServices((promotionOptions, _) =>
+		promotionOptions.Url = builder.Configuration.GetValue<Uri>("Rebate:PromotionBaseUrl")!)
 	.AddPromotionRebate()
 	.AddPromotionRebateRepositories((_, dbOptionsBuilder) => dbOptionsBuilder
 		.UseNpgsql("name=Tgs"));
 
 builder.Services
-	.AddPromotionClientServices((promotionOptions, _) =>
-		promotionOptions.Url = builder.Configuration.GetValue<Uri>("Rebate:PromotionBaseUrl")!)
 	.AddMessageQueue()
 	.AddNatsMessageQueue(natsConfiguration => natsConfiguration
 		.ConfigQueueOptions((options, sp) =>
@@ -59,7 +60,8 @@ builder.Services
 		.AddProcessor<RebateSettingProcessor>("tgs.promotion.turnoverrebate.setting", "tgs.promotion.turnoverrebate.setting")
 		.AddProcessor<RebateSettingProcessor>("tgs.promotion.turnoverrebateweekly.setting", "tgs.promotion.turnoverrebateweekly.setting"))
 	.AddInProcessMessageQueue(ipcConfiguration => ipcConfiguration
-		.AddHandler<DailySettlementHandler>("tgs.rebate.ipc.daily-settle"))
+		.AddHandler<DailySettlementHandler>("tgs.rebate.ipc.daily-settle")
+		.AddHandler<DailyDistributeBonusHandler>("tgs.rebate.ipc.daily-bonus"))
 	.AddInProcessGlobPatternExchange("tgs.rebate.ipc.*")
 	.AddNatsGlobPatternExchange("*");
 

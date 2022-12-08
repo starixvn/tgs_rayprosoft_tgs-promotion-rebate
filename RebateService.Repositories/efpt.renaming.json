@@ -1,0 +1,13 @@
+﻿[
+   {
+      "SchemaName": "dbo",
+      "Tables": [
+         {
+            "Columns": [ ],
+            "Name": "promotion_rebate_distributes",
+            "NewName": "PromotionRebateDistributeRow"
+         }
+      ],
+      "UseSchemaName": false
+   }
+]

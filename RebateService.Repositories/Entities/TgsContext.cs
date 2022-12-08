@@ -18,6 +18,8 @@ public partial class TgsContext : DbContext
 
     public virtual DbSet<PromotionRebateDailyStatistic> PromotionRebateDailyStatistics { get; set; }
 
+    public virtual DbSet<PromotionRebateDistributeRow> PromotionRebateDistributeRows { get; set; }
+
     public virtual DbSet<RebatePromotionJoinPlayer> RebatePromotionJoinPlayers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,6 +30,7 @@ public partial class TgsContext : DbContext
 
             modelBuilder.ApplyConfiguration(new Configurations.PlayerGameRebateAggregateConfiguration());
             modelBuilder.ApplyConfiguration(new Configurations.PromotionRebateDailyStatisticConfiguration());
+            modelBuilder.ApplyConfiguration(new Configurations.PromotionRebateDistributeRowConfiguration());
             modelBuilder.ApplyConfiguration(new Configurations.RebatePromotionJoinPlayerConfiguration());
         OnModelCreatingPartial(modelBuilder);
     }
