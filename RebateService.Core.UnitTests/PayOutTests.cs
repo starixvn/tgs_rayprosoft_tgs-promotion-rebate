@@ -1,4 +1,5 @@
-﻿using NSubstitute;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Tgs.Promotion.Clients;
 using Tgs.Services.Rebate;
 using Tgs.Services.Rebate.ApplicationServices;
@@ -14,7 +15,10 @@ public class PayOutTests
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 
-		var sut = new PayOutCommandService(fakeTgsRepository, fakePromotionServiceClient);
+		var sut = new PayOutCommandService(
+			fakeTgsRepository,
+			fakePromotionServiceClient,
+			NullLogger<PayOutCommandService>.Instance);
 
 		var command = new PayOutCommand(Guid.NewGuid());
 
