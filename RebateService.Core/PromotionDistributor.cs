@@ -9,18 +9,21 @@ namespace Tgs.Services.Rebate;
 internal class PromotionDistributor
 {
 	private readonly PromotionMainInfo _promotionMainInfo;
-	private readonly DateOnly _scheduleDate;
+	private readonly DateOnly _startDate;
+	private readonly DateOnly _endDate;
 	private readonly ISerialNumberGenerator _serialNumberGenerator;
 	private readonly IMessageSender _messageSender;
 
 	public PromotionDistributor(
 		PromotionMainInfo promotionMainInfo,
-		DateOnly scheduleDate,
+		DateOnly startDate,
+		DateOnly endDate,
 		ISerialNumberGenerator serialNumberGenerator,
 		IMessageSender messageSender)
 	{
 		_promotionMainInfo = promotionMainInfo ?? throw new ArgumentNullException(nameof(promotionMainInfo));
-		_scheduleDate = scheduleDate;
+		_startDate = startDate;
+		_endDate = endDate;
 		_serialNumberGenerator = serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
 		_messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
 	}
@@ -31,18 +34,53 @@ internal class PromotionDistributor
 	{
 		var distributes = tgsRepository.QueryPromotionRebateSettlementsAsync(
 			_promotionMainInfo.Id,
-			_scheduleDate.AddDays(-1),
-			_scheduleDate,
+			_startDate,
+			_endDate,
 			cancellationToken)
-			.SelectAwait(async settle => new PromotionRebateDistribute(
-				await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
-				settle.ReportDate,
-				settle.PlayerCode,
-				settle.BrandId,
-				_promotionMainInfo.Id,
-				settle.Bonus,
-				settle.BucketAmount,
-				settle.Settings))
+			.GroupBy(settle => settle.PlayerCode)
+			.SelectAwait(async g => new
+			{
+				ReportDate = _endDate.AddDays(-1),
+				PlayerCode = g.Key,
+				_promotionMainInfo.BrandId,
+				PromotionId = _promotionMainInfo.Id,
+				TotalTurnover = await g.SumAsync(
+					s => s.TotalTurnover, cancellationToken).ConfigureAwait(false),
+				(await g.OrderByDescending(
+					s => s.ReportDate)
+					.FirstAsync(cancellationToken)
+					.ConfigureAwait(false)).Settings
+
+			})
+			.Select(sum => new
+			{
+				sum.ReportDate,
+				sum.PlayerCode,
+				sum.BrandId,
+				sum.PromotionId,
+				sum.TotalTurnover,
+				sum.Settings,
+				CalculateBonus = sum.TotalTurnover * sum.Settings.Percentage / 100M
+			})
+			.SelectAwait(async sum => sum.CalculateBonus > sum.Settings.BonusAmountLimit
+				? new PromotionRebateDistribute(
+					await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
+					sum.ReportDate,
+					sum.PlayerCode,
+					sum.BrandId,
+					_promotionMainInfo.Id,
+					sum.Settings.BonusAmountLimit,
+					sum.Settings.BonusAmountLimit * sum.Settings.TurnoverMultiple,
+					sum.Settings)
+				: new PromotionRebateDistribute(
+					await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
+					sum.ReportDate,
+					sum.PlayerCode,
+					sum.BrandId,
+					_promotionMainInfo.Id,
+					sum.CalculateBonus,
+					sum.CalculateBonus * sum.Settings.TurnoverMultiple,
+					sum.Settings))
 			.ToEnumerable()
 			.ToArray();
 

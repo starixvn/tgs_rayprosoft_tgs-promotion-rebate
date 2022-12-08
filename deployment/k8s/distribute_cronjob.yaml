@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: promotion-rebate-distribute-scheduler
+spec:
+  schedule: "0 23 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: promotion-rebate-bonus-job
+              image: alpine/curl:3.14
+              imagePullPolicy: IfNotPresent
+              command:
+                - curl
+                - -X
+                - POST
+                - http://tgs-promotion-rebate/schedule/settle
+          restartPolicy: OnFailure

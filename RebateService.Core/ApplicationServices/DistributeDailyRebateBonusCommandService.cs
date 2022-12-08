@@ -34,6 +34,7 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 			.Select(info => ActivatorUtilities.CreateInstance<PromotionDistributor>(
 				_serviceProvider,
 				info,
+				command.ScheduleDate.AddDays(-1),
 				command.ScheduleDate));
 
 		await foreach (var distributor in distributors.ConfigureAwait(false))
