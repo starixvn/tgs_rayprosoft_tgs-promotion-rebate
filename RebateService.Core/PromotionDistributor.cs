@@ -43,7 +43,8 @@ internal class PromotionDistributor
 				settle.Bonus,
 				settle.BucketAmount,
 				settle.Settings))
-			.ToEnumerable();
+			.ToEnumerable()
+			.ToArray();
 
 		await tgsRepository.SavePromotionRebateDistributesAsync(
 			distributes,
