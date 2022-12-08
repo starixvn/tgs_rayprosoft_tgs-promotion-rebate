@@ -1,4 +1,5 @@
-﻿using Tgs.Promotion.Clients;
+﻿using Microsoft.Extensions.Logging;
+using Tgs.Promotion.Clients;
 using Tgs.ServiceUtility;
 
 namespace Tgs.Services.Rebate.ApplicationServices;
@@ -7,11 +8,16 @@ internal class PayOutCommandService : ICommandService<PayOutCommand>
 {
 	private readonly ITgsRepository _tgsRepository;
 	private readonly IPromotionServiceClient _promotionServiceClient;
+	private readonly ILogger<PayOutCommandService> _logger;
 
-	public PayOutCommandService(ITgsRepository tgsRepository, IPromotionServiceClient promotionServiceClient)
+	public PayOutCommandService(
+		ITgsRepository tgsRepository,
+		IPromotionServiceClient promotionServiceClient,
+		ILogger<PayOutCommandService> logger)
 	{
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
 		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
 	public async ValueTask ExecuteAsync(PayOutCommand command, CancellationToken cancellationToken = default)
@@ -21,7 +27,10 @@ internal class PayOutCommandService : ICommandService<PayOutCommand>
 			cancellationToken).ConfigureAwait(false);
 
 		if (distribute is null)
+		{
+			_logger.LogWarning("Can't found distribute({distributeId})", command.DistributeId);
 			return;
+		}
 
 		var conditionHash = distribute.DistributeDate.DayNumber;
 		var plan = await _promotionServiceClient.GetPromotionDistributePlanAsync(
