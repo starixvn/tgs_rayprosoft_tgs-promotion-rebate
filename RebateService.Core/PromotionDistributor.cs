@@ -52,6 +52,7 @@ internal class PromotionDistributor
 					.ConfigureAwait(false)).Settings
 
 			})
+			.Where(sum => sum.TotalTurnover >= sum.Settings.TurnoverThreshold)
 			.Select(sum => new
 			{
 				sum.ReportDate,

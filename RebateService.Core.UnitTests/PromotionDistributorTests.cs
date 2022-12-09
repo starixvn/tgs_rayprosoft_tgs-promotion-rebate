@@ -4,7 +4,6 @@ using Tgs.MessageQueue;
 using Tgs.Promotion.Clients;
 using Tgs.SerialNumberGenerator;
 using Tgs.Services.Rebate;
-using Xunit;
 
 namespace RebateService.Core.UnitTests;
 
@@ -309,7 +308,6 @@ public class PromotionDistributorTests
 			.SavePromotionRebateDistributesAsync(
 				Arg.Is<IEnumerable<PromotionRebateDistribute>>(
 					dists => expectedDistributes.Matches(dists)));
-
 	}
 
 	[Fact]
@@ -364,7 +362,7 @@ public class PromotionDistributorTests
 		await sut.ProcessDistributesAsync(fakeTgsRepository);
 
 		// Assert
-		_ = fakeTgsRepository.Received(0)
+		_ = fakeTgsRepository.Received(1)
 			.SavePromotionRebateDistributesAsync(
 				Arg.Is<IEnumerable<PromotionRebateDistribute>>(dists => dists.Count() == 0));
 	}
