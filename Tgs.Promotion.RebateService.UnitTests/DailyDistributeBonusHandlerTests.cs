@@ -15,9 +15,11 @@ public class DailyDistributeBonusHandlerTests
 	{
 		// Arrange
 		var fakeDistributeService = Substitute.For<ICommandService<DistributeDailyRebateBonusCommand>>();
+		var fakeWeeklyDistributeService = Substitute.For<ICommandService<DistributeWeeklyRebateBonusCommand>>();
 
 		var sut = new DailyDistributeBonusHandler(
 			fakeDistributeService,
+			fakeWeeklyDistributeService,
 			NullLogger<DailyDistributeBonusHandler>.Instance);
 
 		var request = new RebateDistributeRequest
@@ -31,5 +33,7 @@ public class DailyDistributeBonusHandlerTests
 		// Assert
 		_ = fakeDistributeService.Received(1)
 			.ExecuteAsync(Arg.Is(new DistributeDailyRebateBonusCommand(request.DistributeDate)));
+		_ = fakeWeeklyDistributeService.Received(1)
+			.ExecuteAsync(Arg.Is(new DistributeWeeklyRebateBonusCommand(request.DistributeDate)));
 	}
 }
