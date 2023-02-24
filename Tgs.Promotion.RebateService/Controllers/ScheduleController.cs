@@ -1,5 +1,5 @@
 ﻿using Google.Protobuf;
-
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Mvc;
 
 using Tgs.MessageQueue;
@@ -17,13 +17,11 @@ public class ScheduleController : ControllerBase
 	public async ValueTask ExecuteDailySettlementAsync(
 		[FromServices] IMessageSender messageSender)
 	{
-		var currentTime = DateTimeOffset.UtcNow;
-		var currentReportDate = DateOnly.FromDateTime(
-			currentTime.ToOffset(TimeSpan.FromHours(8D)).DateTime);
+		var utcNow = DateTime.UtcNow;
 
 		var request = new DailySettlementRequest
 		{
-			ReportDate = currentReportDate
+			SettleDateTime = Timestamp.FromDateTime(new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, 0, 0, DateTimeKind.Utc))
 		};
 
 		await messageSender.PublishAsync(
@@ -32,15 +30,18 @@ public class ScheduleController : ControllerBase
 			HttpContext.RequestAborted).ConfigureAwait(false);
 	}
 
-	[HttpPost("settle/{reportDate}", Name = "ExecuteDailySettlementByDate")]
+	[HttpPost("settle/{reportDate}/{utcHour}", Name = "ExecuteDailySettlementByDate")]
 	[SuccessStatusCode(202)]
 	public async ValueTask ExecuteDailySettlementAsync(
 		[FromServices] IMessageSender messageSender,
-		DateOnly reportDate)
+		DateOnly reportDate,
+		int utcHour)
 	{
+		var reportDateTime = new DateTimeOffset(reportDate.Year, reportDate.Month, reportDate.Day,utcHour,0,0, TimeSpan.Zero);
+
 		var request = new DailySettlementRequest
 		{
-			ReportDate = reportDate
+			SettleDateTime = Timestamp.FromDateTime(reportDateTime.UtcDateTime)
 		};
 
 		await messageSender.PublishAsync(
@@ -54,13 +55,11 @@ public class ScheduleController : ControllerBase
 	public async Task ExecuteDistributeAsync(
 		[FromServices] IMessageSender messageSender)
 	{
-		var currentTime = DateTimeOffset.UtcNow;
-		var currentReportDate = DateOnly.FromDateTime(
-			currentTime.ToOffset(TimeSpan.FromHours(8D)).DateTime);
+		var utcNow = DateTime.UtcNow;
 
 		var request = new RebateDistributeRequest
 		{
-			DistributeDate = currentReportDate
+			DistributeDateTime = Timestamp.FromDateTime(new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, 0, 0, DateTimeKind.Utc))
 		};
 
 		await messageSender.PublishAsync(
@@ -69,15 +68,18 @@ public class ScheduleController : ControllerBase
 			HttpContext.RequestAborted).ConfigureAwait(false);
 	}
 
-	[HttpPost("bonus/{distributeDate}", Name = "ExecuteDistributeByDate")]
+	[HttpPost("bonus/{distributeDate}/{utcHour}", Name = "ExecuteDistributeByDate")]
 	[SuccessStatusCode(202)]
 	public async Task ExecuteDistributeAsync(
 		[FromServices] IMessageSender messageSender,
-		DateOnly distributeDate)
+		DateOnly distributeDate,
+		int utcHour)
 	{
+		var distributeDateTime = new DateTimeOffset(distributeDate.Year, distributeDate.Month, distributeDate.Day, utcHour, 0, 0, TimeSpan.Zero);
+
 		var request = new RebateDistributeRequest
 		{
-			DistributeDate = distributeDate
+			DistributeDateTime = Timestamp.FromDateTime(distributeDateTime.UtcDateTime)
 		};
 
 		await messageSender.PublishAsync(

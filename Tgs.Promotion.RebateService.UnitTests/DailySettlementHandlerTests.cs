@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Tgs.Promotion.RebateService.MessageQueue;
@@ -20,9 +21,11 @@ public class DailySettlementHandlerTests
 			fakeCalculateService,
 			NullLogger<DailySettlementHandler>.Instance);
 
+		var date = DateTimeOffset.Parse("2022-12-8 16:00:00+00");
+
 		var request = new DailySettlementRequest
 		{
-			ReportDate = DateOnly.Parse("2022-12-8")
+			SettleDateTime = Timestamp.FromDateTime(date.UtcDateTime)
 		};
 
 		// Act
@@ -30,6 +33,6 @@ public class DailySettlementHandlerTests
 
 		// Assert
 		_ = fakeCalculateService.Received(1)
-			.ExecuteAsync(Arg.Is(new CalculateDailyRebateCommand(request.ReportDate)));
+			.ExecuteAsync(Arg.Is(new CalculateDailyRebateCommand(request.SettleDateTime.ToDateTime())));
 	}
 }

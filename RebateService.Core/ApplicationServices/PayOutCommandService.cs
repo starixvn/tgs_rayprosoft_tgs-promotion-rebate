@@ -32,14 +32,8 @@ internal class PayOutCommandService : ICommandService<PayOutCommand>
 			return;
 		}
 
-		var conditionHash = distribute.DistributeDate.DayNumber;
-		var plan = await _promotionServiceClient.GetPromotionDistributePlanAsync(
-			distribute.PromotionId,
-			conditionHash,
-			cancellationToken).ConfigureAwait(false);
-
 		_ = await _promotionServiceClient.DistributePromotionBonusAsync(
-			plan.Id,
+			command.PlanId,
 			distribute.PlayerCode,
 			distribute.Bonus,
 			distribute.BucketAmount,

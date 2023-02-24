@@ -6,7 +6,7 @@ namespace Tgs.Services.Rebate.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddPromotionRebate(this IServiceCollection services)
-        => services
-            .RegisterAllServiceUtilityTypes(Assembly.GetExecutingAssembly(), ServiceLifetime.Transient);
+	public static IServiceCollection AddPromotionRebate(this IServiceCollection services)
+		=> services
+			.RegisterAllServiceUtilityTypes(Assembly.GetExecutingAssembly(), ServiceLifetime.Transient);
 }

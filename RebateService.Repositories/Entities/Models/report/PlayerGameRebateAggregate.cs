@@ -54,4 +54,6 @@ public partial class PlayerGameRebateAggregate
     public decimal OriginalTurnover { get; set; }
 
     public decimal ValidBetAmount { get; set; }
+
+    public DateTime? ReportDateTime { get; set; }
 }

@@ -22,4 +22,6 @@ public partial class PromotionRebateDailyStatistic
     public string Settings { get; set; } = null!;
 
     public decimal TotalTurnover { get; set; }
+
+    public DateTime ReportDateTime { get; set; }
 }

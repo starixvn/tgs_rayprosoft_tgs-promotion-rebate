@@ -46,7 +46,9 @@ builder.Services
 		promotionOptions.Url = builder.Configuration.GetValue<Uri>("Rebate:PromotionBaseUrl")!)
 	.AddPromotionRebate()
 	.AddPromotionRebateRepositories((_, dbOptionsBuilder) => dbOptionsBuilder
-		.UseNpgsql("name=Tgs"));
+		.UseNpgsql("name=Tgs"))
+	.AddBrandServiceClient((options, _) =>
+		options.BrandCertificateBaseUrl = builder.Configuration.GetValue<Uri>("Rebate:BrandServiceBaseUrl")!);
 
 builder.Services
 	.AddMessageQueue()

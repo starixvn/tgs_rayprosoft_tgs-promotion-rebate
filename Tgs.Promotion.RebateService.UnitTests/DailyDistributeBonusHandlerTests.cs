@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Tgs.Promotion.RebateService.MessageQueue;
@@ -22,9 +23,11 @@ public class DailyDistributeBonusHandlerTests
 			fakeWeeklyDistributeService,
 			NullLogger<DailyDistributeBonusHandler>.Instance);
 
+		var date = DateTimeOffset.Parse("2022-12-8 16:00:00+00");
+
 		var request = new RebateDistributeRequest
 		{
-			DistributeDate = DateOnly.Parse("2022-12-8")
+			DistributeDateTime = Timestamp.FromDateTime(date.UtcDateTime)
 		};
 
 		// Act
@@ -32,8 +35,8 @@ public class DailyDistributeBonusHandlerTests
 
 		// Assert
 		_ = fakeDistributeService.Received(1)
-			.ExecuteAsync(Arg.Is(new DistributeDailyRebateBonusCommand(request.DistributeDate)));
+			.ExecuteAsync(Arg.Is(new DistributeDailyRebateBonusCommand(request.DistributeDateTime.ToDateTime())));
 		_ = fakeWeeklyDistributeService.Received(1)
-			.ExecuteAsync(Arg.Is(new DistributeWeeklyRebateBonusCommand(request.DistributeDate)));
+			.ExecuteAsync(Arg.Is(new DistributeWeeklyRebateBonusCommand(request.DistributeDateTime.ToDateTime())));
 	}
 }

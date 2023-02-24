@@ -17,8 +17,6 @@ public partial class PromotionRebateDistributeRow
 
     public DateTime CreatedOn { get; set; }
 
-    public DateOnly DistributeDate { get; set; }
-
     public string PlayerCode { get; set; } = null!;
 
     public Guid PromotionId { get; set; }
@@ -26,4 +24,8 @@ public partial class PromotionRebateDistributeRow
     public string Settings { get; set; } = null!;
 
     public string Status { get; set; } = null!;
+
+    public DateTime DistributeFrom { get; set; }
+
+    public DateTime DistributeTo { get; set; }
 }

@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: promotion-rebate-distribute-scheduler
 spec:
-  schedule: "0 23 * * *"
+  schedule: "33 * * * *"
   jobTemplate:
     spec:
       template:

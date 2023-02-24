@@ -11,6 +11,10 @@ data:
           "ExportProcessorType": "Batch"
         }
       },
+      "Rebate": {
+        "PromotionBaseUrl": "http://promotion-api",
+        "BrandServiceBaseUrl": "http://brand-cert-api"
+      }
     }
   otel-collector-config.yaml: |
     receivers:

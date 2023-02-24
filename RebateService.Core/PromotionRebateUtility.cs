@@ -5,10 +5,10 @@ namespace Tgs.Services.Rebate;
 
 public static class PromotionRebateUtility
 {
-    public static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-        WriteIndented = false,
-        Converters = { new JsonStringEnumConverter() }
-    };
+	public static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
+	{
+		DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+		WriteIndented = false,
+		Converters = { new JsonStringEnumConverter() }
+	};
 }

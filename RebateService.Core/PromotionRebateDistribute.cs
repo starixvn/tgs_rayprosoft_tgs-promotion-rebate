@@ -1,7 +1,8 @@
 ﻿namespace Tgs.Services.Rebate;
 public record PromotionRebateDistribute(
 	Guid Id,
-	DateOnly DistributeDate,
+	DateTime DistributeFrom,
+	DateTime DistributeTo,
 	string PlayerCode,
 	Guid BrandId,
 	Guid PromotionId,

@@ -1,10 +1,12 @@
 ﻿using Tgs.Promotion.Clients;
+using Tgs.Promotion.Clients.Models.Promotion;
 
 namespace Tgs.Services.Rebate;
 
 internal class PromotionCounter
 {
 	private readonly PromotionMainInfo _promotionMainInfo;
+	private readonly IPromotionClient _promotionClient;
 	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly HashSet<string> _joinPlayers;
 	private RebateSettings _rebateSettings = default!;
@@ -14,10 +16,12 @@ internal class PromotionCounter
 
 	public PromotionCounter(
 		PromotionMainInfo promotionMainInfo,
+		IPromotionClient promotionClient,
 		IPromotionServiceClient promotionServiceClient,
 		IEnumerable<string> joinPlayers)
 	{
 		_promotionMainInfo = promotionMainInfo ?? throw new ArgumentNullException(nameof(promotionMainInfo));
+		_promotionClient = promotionClient ?? throw new ArgumentNullException(nameof(promotionClient));
 		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_joinPlayers = joinPlayers.ToHashSet();
 	}
@@ -28,10 +32,24 @@ internal class PromotionCounter
 			_promotionMainInfo.Id,
 			cancellationToken).ConfigureAwait(false);
 
+		var promotions = await _promotionClient.GetPromotionsAsync(new GetPromotionsRequest
+		{
+			BrandId = _promotionMainInfo.BrandId,
+			Type = _promotionMainInfo.PromotionType,
+			ShowAll = true
+		}).ConfigureAwait(false);
+
+		var promotion = promotions.Items.First(x => x.Id == _promotionMainInfo.Id);
+
 		if (promotionRule is null)
 			throw new NullReferenceException(nameof(promotionRule));
 
-		_rebateSettings = promotionRule.CampaignDetail;
+		_rebateSettings = promotionRule.CampaignDetail with
+		{
+			GameProviderIds = promotion.GameProviderIds,
+			VipLevels = promotion.VipLevels
+		};
+
 		_gameProviderIdCount = _rebateSettings.GameProviderIds?.Count() ?? 0;
 	}
 
@@ -47,13 +65,12 @@ internal class PromotionCounter
 				|| gameRound.GameType == _rebateSettings.GameType
 			where _gameProviderIdCount == 0
 				|| _rebateSettings.GameProviderIds!.Contains(gameRound.GameProviderId)
-			group gameRound by new { gameRound.ReportDate, gameRound.PlayerCode } into g
+			group gameRound by gameRound.PlayerCode into g
 			let totalTurnover = g.Sum(round => round.TotalTurnover)
 			let calculateBonus = totalTurnover * _rebateSettings.Percentage / 100M
 			let bonus = calculateBonus
 			select new PromotionRebateSettlement(
-				g.Key.ReportDate,
-				g.Key.PlayerCode,
+				g.Key,
 				BrandId,
 				_promotionMainInfo.Id,
 				totalTurnover,
