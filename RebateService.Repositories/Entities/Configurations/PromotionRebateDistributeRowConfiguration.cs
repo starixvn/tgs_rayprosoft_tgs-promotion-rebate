@@ -29,12 +29,9 @@ namespace RebateService.Repositories.Entities.Configurations
             .HasPrecision(18, 6)
             .HasColumnName("bucket_amount");
             entity.Property(e => e.CreatedOn).HasColumnName("created_on");
-            entity.Property(e => e.DistributeFrom)
-            .HasDefaultValueSql("'-infinity'::timestamp with time zone")
-            .HasColumnName("distribute_from");
-            entity.Property(e => e.DistributeTo)
-            .HasDefaultValueSql("'-infinity'::timestamp with time zone")
-            .HasColumnName("distribute_to");
+            entity.Property(e => e.DistributeDate)
+            .HasDefaultValueSql("'-infinity'::date")
+            .HasColumnName("distribute_date");
             entity.Property(e => e.PlayerCode).HasColumnName("player_code");
             entity.Property(e => e.PromotionId).HasColumnName("promotion_id");
             entity.Property(e => e.Settings)

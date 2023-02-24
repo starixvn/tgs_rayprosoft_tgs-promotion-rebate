@@ -1,11 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Tgs.BrandCertificate.Clients;
 using Tgs.Promotion.Clients;
 using Tgs.Services.Rebate;
 using Tgs.Services.Rebate.ApplicationServices;
-using Xunit;
 
 namespace RebateService.Core.UnitTests;
 
@@ -32,14 +30,12 @@ public class CalculateDailyRebateTests
 		var command = new CalculateDailyRebateCommand(date.DateTime);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
-			.Returns(
-				"""
+			.Returns("""
 		{
 			"16": 480,
 			"17": 420
 		}
-		"""
-			);
+		""");
 
 		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(Arg.Any<int>()).Returns(Array.Empty<Guid>().ToAsyncEnumerable());
 		// Act

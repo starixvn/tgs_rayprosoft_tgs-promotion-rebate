@@ -24,8 +24,7 @@ public class PayOutTests
 
 		var distribute = new PromotionRebateDistribute(
 			command.DistributeId,
-			DateTime.Parse("2022-12-8"),
-			DateTime.Parse("2022-12-8"),
+			DateOnly.Parse("2022-12-8"),
 			"test1",
 			Guid.NewGuid(),
 			Guid.NewGuid(),

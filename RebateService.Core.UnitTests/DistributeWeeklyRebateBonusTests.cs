@@ -37,9 +37,7 @@ public class DistributeWeeklyRebateBonusTests
 		var startDate =
 			new DateTimeOffset(DateOnly.Parse("2022-12-05").ToDateTime(TimeOnly.MinValue),
 				TimeSpan.FromMinutes(480));
-		var endDate =
-			new DateTimeOffset(DateOnly.Parse("2022-12-11").ToDateTime(TimeOnly.MinValue),
-				TimeSpan.FromMinutes(480));
+		var firstDate = new DateOnly(startDate.Year, startDate.Month, startDate.Day);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
 			.Returns(
@@ -89,7 +87,7 @@ public class DistributeWeeklyRebateBonusTests
 			.Returns(fakePromotionServiceClient);
 
 		_ = fakeTgsRepository
-			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate.UtcDateTime), Arg.Is(endDate.UtcDateTime))
+			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(firstDate))
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		// Act
@@ -128,9 +126,7 @@ public class DistributeWeeklyRebateBonusTests
 		var startDate =
 			new DateTimeOffset(DateOnly.Parse("2022-12-01").ToDateTime(TimeOnly.MinValue),
 				TimeSpan.FromMinutes(480));
-		var endDate =
-			new DateTimeOffset(DateOnly.Parse("2022-12-04").ToDateTime(TimeOnly.MinValue),
-				TimeSpan.FromMinutes(480));
+		var firstDate = new DateOnly(startDate.Year, startDate.Month, startDate.Day);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
 			.Returns(
@@ -180,7 +176,7 @@ public class DistributeWeeklyRebateBonusTests
 			.Returns(fakePromotionServiceClient);
 
 		_ = fakeTgsRepository
-			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate.UtcDateTime), Arg.Is(endDate.UtcDateTime))
+			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(firstDate))
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		// Act
@@ -219,9 +215,7 @@ public class DistributeWeeklyRebateBonusTests
 		var startDate =
 			new DateTimeOffset(DateOnly.Parse("2022-12-26").ToDateTime(TimeOnly.MinValue),
 				TimeSpan.FromMinutes(480));
-		var endDate =
-			new DateTimeOffset(DateOnly.Parse("2022-12-31").ToDateTime(TimeOnly.MinValue),
-				TimeSpan.FromMinutes(480));
+		var firstDate = new DateOnly(startDate.Year, startDate.Month, startDate.Day);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
 			.Returns(
@@ -271,7 +265,7 @@ public class DistributeWeeklyRebateBonusTests
 			.Returns(fakePromotionServiceClient);
 
 		_ = fakeTgsRepository
-			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate.UtcDateTime), Arg.Is(endDate.UtcDateTime))
+			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(firstDate))
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		// Act
@@ -310,9 +304,7 @@ public class DistributeWeeklyRebateBonusTests
 		var startDate =
 			new DateTimeOffset(DateOnly.Parse("2022-12-05").ToDateTime(TimeOnly.MinValue),
 				TimeSpan.FromMinutes(-480));
-		var endDate =
-			new DateTimeOffset(DateOnly.Parse("2022-12-11").ToDateTime(TimeOnly.MinValue),
-				TimeSpan.FromMinutes(-480));
+		var firstDate = new DateOnly(startDate.Year, startDate.Month, startDate.Day);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
 			.Returns(
@@ -363,7 +355,7 @@ public class DistributeWeeklyRebateBonusTests
 			.Returns(fakePromotionServiceClient);
 
 		_ = fakeTgsRepository
-			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate.UtcDateTime), Arg.Is(endDate.UtcDateTime))
+			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(firstDate))
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		// Act
@@ -402,9 +394,7 @@ public class DistributeWeeklyRebateBonusTests
 		var startDate =
 			new DateTimeOffset(DateOnly.Parse("2022-12-01").ToDateTime(TimeOnly.MinValue),
 				TimeSpan.FromMinutes(-480));
-		var endDate =
-			new DateTimeOffset(DateOnly.Parse("2022-12-04").ToDateTime(TimeOnly.MinValue),
-				TimeSpan.FromMinutes(-480));
+		var firstDate = new DateOnly(startDate.Year, startDate.Month, startDate.Day);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
 			.Returns(
@@ -455,7 +445,7 @@ public class DistributeWeeklyRebateBonusTests
 			.Returns(fakePromotionServiceClient);
 
 		_ = fakeTgsRepository
-			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate.UtcDateTime), Arg.Is(endDate.UtcDateTime))
+			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(firstDate))
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		// Act
@@ -494,9 +484,7 @@ public class DistributeWeeklyRebateBonusTests
 		var startDate =
 			new DateTimeOffset(DateOnly.Parse("2022-12-26").ToDateTime(TimeOnly.MinValue),
 				TimeSpan.FromMinutes(-480));
-		var endDate =
-			new DateTimeOffset(DateOnly.Parse("2022-12-31").ToDateTime(TimeOnly.MinValue),
-				TimeSpan.FromMinutes(-480));
+		var firstDate = new DateOnly(startDate.Year, startDate.Month, startDate.Day);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
 			.Returns(
@@ -547,7 +535,7 @@ public class DistributeWeeklyRebateBonusTests
 			.Returns(fakePromotionServiceClient);
 
 		_ = fakeTgsRepository
-			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate.UtcDateTime), Arg.Is(endDate.UtcDateTime))
+			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(firstDate))
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		// Act

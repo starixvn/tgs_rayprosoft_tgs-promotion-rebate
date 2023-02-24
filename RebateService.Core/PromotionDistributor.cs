@@ -10,8 +10,8 @@ internal class PromotionDistributor
 {
 	private readonly PromotionMainInfo _promotionMainInfo;
 
-	private readonly DateTime _startDate;
-	private readonly DateTime _endDate;
+	private readonly DateTimeOffset _startDate;
+	private readonly DateTimeOffset _endDate;
 	private readonly decimal _usedAmount;
 	private readonly ISerialNumberGenerator _serialNumberGenerator;
 	private readonly IMessageSender _messageSender;
@@ -19,8 +19,8 @@ internal class PromotionDistributor
 
 	public PromotionDistributor(
 		PromotionMainInfo promotionMainInfo,
-		DateTime startDate,
-		DateTime endDate,
+		DateTimeOffset startDate,
+		DateTimeOffset endDate,
 		decimal usedAmount,
 		ISerialNumberGenerator serialNumberGenerator,
 		IMessageSender messageSender,
@@ -41,10 +41,12 @@ internal class PromotionDistributor
 	{
 		var usedAmount = _usedAmount;
 
+		var firstDate = new DateOnly(_startDate.Year, _startDate.Month, _startDate.Day);
+
 		var distributes = tgsRepository.QueryPromotionRebateSettlementsAsync(
 			_promotionMainInfo.Id,
-			_startDate,
-			_endDate.AddDays(1),
+			_startDate.UtcDateTime,
+			_endDate.AddDays(1).UtcDateTime,
 			cancellationToken)
 			.GroupBy(settle => settle.PlayerCode)
 			.SelectAwait(async g => new
@@ -84,8 +86,7 @@ internal class PromotionDistributor
 				{
 					return new PromotionRebateDistribute(
 						await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
-						sum.DistributeFrom,
-						sum.DistributeTo,
+						firstDate,
 						sum.PlayerCode,
 						sum.BrandId,
 						_promotionMainInfo.Id,
@@ -98,8 +99,7 @@ internal class PromotionDistributor
 
 				return new PromotionRebateDistribute(
 						await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
-						sum.DistributeFrom,
-						sum.DistributeTo,
+						firstDate,
 						sum.PlayerCode,
 						sum.BrandId,
 						_promotionMainInfo.Id,
@@ -112,8 +112,7 @@ internal class PromotionDistributor
 
 		if (distributes.Length > 0)
 		{
-			if (!await tgsRepository.CheckHaveRebateDistributeAsync(_promotionMainInfo.Id, _startDate,
-				    _endDate, cancellationToken))
+			if (!await tgsRepository.CheckHaveRebateDistributeAsync(_promotionMainInfo.Id, firstDate, cancellationToken))
 			{
 				await tgsRepository.SavePromotionRebateDistributesAsync(
 					distributes,
@@ -123,12 +122,10 @@ internal class PromotionDistributor
 			}
 			else
 			{
-				distributes = await tgsRepository.GetRebateUnDistributedAsync(_promotionMainInfo.Id, _startDate,
-					_endDate, cancellationToken);
+				distributes = await tgsRepository.GetRebateUnDistributedAsync(_promotionMainInfo.Id, firstDate, cancellationToken);
 			}
 
-			var conditionHash = new DateOnly(_startDate.Year, _startDate.Month,
-				_startDate.Day).DayNumber;
+			var conditionHash = new DateOnly(_startDate.Year, _startDate.Month, _startDate.Day).DayNumber;
 
 			var plan = await _promotionServiceClient.GetPromotionDistributePlanAsync(
 				_promotionMainInfo.Id,

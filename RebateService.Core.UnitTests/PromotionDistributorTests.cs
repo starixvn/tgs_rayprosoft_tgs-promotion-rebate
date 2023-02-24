@@ -20,6 +20,7 @@ public class PromotionDistributorTests
 		};
 		var scheduleStartDate = DateTimeOffset.Parse("2022-12-7 00:00:00+8");
 		var scheduleEndDate = DateTimeOffset.Parse("2022-12-7 00:00:00+8");
+		var firstDate = DateOnly.Parse("2022-12-7");
 
 		var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
 		var fakeMessageSender = Substitute.For<IMessageSender>();
@@ -27,8 +28,8 @@ public class PromotionDistributorTests
 
 		var sut = new PromotionDistributor(
 			promotionMainInfo,
-			scheduleStartDate.UtcDateTime,
-			scheduleEndDate.UtcDateTime,
+			scheduleStartDate,
+			scheduleEndDate,
 			0M,
 			fakeSerialNumberGenerator,
 			fakeMessageSender,
@@ -65,8 +66,7 @@ public class PromotionDistributorTests
 		{
 			new
 			{
-				DistributeFrom = scheduleStartDate.UtcDateTime,
-				DistributeTo = scheduleEndDate.UtcDateTime,
+				DistributeDate = firstDate,
 				PlayerCode = "test1",
 				Bonus = 500M,
 				BucketAmount = 5000M
@@ -92,8 +92,9 @@ public class PromotionDistributorTests
 			Id = Guid.NewGuid(),
 			BrandId = Guid.NewGuid()
 		};
-		var scheduleStartDate = DateTime.Parse("2022-12-7");
-		var scheduleEndDate = DateTime.Parse("2022-12-7");
+		var scheduleStartDate = DateTimeOffset.Parse("2022-12-7 00:00:00+8");
+		var scheduleEndDate = DateTimeOffset.Parse("2022-12-7 00:00:00+8");
+		var firstDate = DateOnly.Parse("2022-12-7");
 
 		var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
 		var fakeMessageSender = Substitute.For<IMessageSender>();
@@ -114,8 +115,8 @@ public class PromotionDistributorTests
 
 		_ = fakeTgsRepository.QueryPromotionRebateSettlementsAsync(
 			Arg.Is(promotionMainInfo.Id),
-			Arg.Is(scheduleStartDate),
-			Arg.Is(scheduleEndDate.AddDays(1)))
+			Arg.Is(scheduleStartDate.UtcDateTime),
+			Arg.Is(scheduleEndDate.UtcDateTime.AddDays(1)))
 			.Returns(new[] {
 				new PromotionRebateSettlement(
 					"test1",
@@ -139,8 +140,7 @@ public class PromotionDistributorTests
 		{
 			new
 			{
-				DistributeFrom = scheduleStartDate,
-				DistributeTo = scheduleEndDate,
+				DistributeDate = firstDate,
 				PlayerCode = "test1",
 				Bonus = 1000M,
 				BucketAmount = 10000M
@@ -166,8 +166,9 @@ public class PromotionDistributorTests
 			Id = Guid.NewGuid(),
 			BrandId = Guid.NewGuid()
 		};
-		var scheduleStartDate = DateTime.Parse("2022-12-7");
-		var scheduleEndDate = DateTime.Parse("2022-12-15");
+		var scheduleStartDate = DateTimeOffset.Parse("2022-12-7 00:00:00+8");
+		var scheduleEndDate = DateTimeOffset.Parse("2022-12-7 00:00:00+8");
+		var firstDate = DateOnly.Parse("2022-12-7");
 
 		var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
 		var fakeMessageSender = Substitute.For<IMessageSender>();
@@ -188,8 +189,8 @@ public class PromotionDistributorTests
 
 		_ = fakeTgsRepository.QueryPromotionRebateSettlementsAsync(
 			Arg.Is(promotionMainInfo.Id),
-			Arg.Is(scheduleStartDate),
-			Arg.Is(scheduleEndDate.AddDays(1)))
+			Arg.Is(scheduleStartDate.UtcDateTime),
+			Arg.Is(scheduleEndDate.UtcDateTime.AddDays(1)))
 			.Returns(new[] {
 				new PromotionRebateSettlement(
 					"test1",
@@ -293,8 +294,7 @@ public class PromotionDistributorTests
 		{
 			new
 			{
-				DistributeFrom = scheduleStartDate,
-				DistributeTo = scheduleEndDate,
+				DistributeDate = firstDate,
 				PlayerCode = "test1",
 				Bonus = 1500M,
 				BucketAmount = 15000M
@@ -340,7 +340,7 @@ public class PromotionDistributorTests
 
 		_ = fakePromotionServiceClient.GetPromotionDistributePlanAsync(Arg.Any<Guid>(), Arg.Any<long>()).Returns(new PromotionDistributePlanInfo(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 123));
 
-		_ = fakeTgsRepository.GetRebateUnDistributedAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>())
+		_ = fakeTgsRepository.GetRebateUnDistributedAsync(Arg.Any<Guid>(), Arg.Any<DateOnly>())
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		_ = fakeTgsRepository.QueryPromotionRebateSettlementsAsync(
@@ -375,6 +375,6 @@ public class PromotionDistributorTests
 				Arg.Any<IEnumerable<PromotionRebateDistribute>>());
 
 		_ = fakeTgsRepository.Received(0)
-			.GetRebateUnDistributedAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>());
+			.GetRebateUnDistributedAsync(Arg.Any<Guid>(), Arg.Any<DateOnly>());
 	}
 }

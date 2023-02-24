@@ -14,9 +14,9 @@ public interface ITgsRepository
 
 	ValueTask<PromotionRebateDistribute?> GetRebateDistributeAsync(Guid distributeId, CancellationToken cancellationToken = default);
 
-	ValueTask<PromotionRebateDistribute[]> GetRebateUnDistributedAsync(Guid promotionId, DateTime from, DateTime to, CancellationToken cancellationToken = default);
+	ValueTask<PromotionRebateDistribute[]> GetRebateUnDistributedAsync(Guid promotionId, DateOnly date, CancellationToken cancellationToken = default);
 
-	ValueTask<bool> CheckHaveRebateDistributeAsync(Guid promotionId, DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken = default);
+	ValueTask<bool> CheckHaveRebateDistributeAsync(Guid promotionId, DateOnly date, CancellationToken cancellationToken = default);
 
 	IAsyncEnumerable<PlayerJoinRecord> QueryPromotionJoinPlayersAsync(IEnumerable<Guid> promotions, CancellationToken cancellationToken = default);
 

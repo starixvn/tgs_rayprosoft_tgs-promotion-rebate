@@ -75,8 +75,8 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 
 				return (
 					Info: info,
-					PreviousTriggerDate: weekFrom < startTime ? startTime.UtcDateTime : weekFrom.UtcDateTime,
-					NextTriggerDate: weekTo > endTime ? endTime.UtcDateTime : weekTo.UtcDateTime,
+					PreviousTriggerDate: weekFrom < startTime ? startTime : weekFrom,
+					NextTriggerDate: weekTo > endTime ? endTime : weekTo,
 					promotion.UsedAmount);
 			})
 			.ToArrayAsync(cancellationToken)

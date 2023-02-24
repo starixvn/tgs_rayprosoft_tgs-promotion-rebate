@@ -71,8 +71,8 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 				return ActivatorUtilities.CreateInstance<PromotionDistributor>(
 					_serviceProvider,
 					info,
-					reportDateTime.UtcDateTime,
-					reportDateTime.UtcDateTime,
+					reportDateTime,
+					reportDateTime,
 					promotion.UsedAmount);
 			});
 

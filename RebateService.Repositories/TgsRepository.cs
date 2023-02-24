@@ -81,16 +81,15 @@ internal class TgsRepository : ITgsRepository
 		_ = await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 	}
 
-	public async ValueTask<PromotionRebateDistribute[]> GetRebateUnDistributedAsync(Guid promotionId, DateTime from, DateTime to,
+	public async ValueTask<PromotionRebateDistribute[]> GetRebateUnDistributedAsync(Guid promotionId, DateOnly date,
 		CancellationToken cancellationToken = default)
 		=> await _dbContext.PromotionRebateDistributeRows
 			.Where(row => row.PromotionId == promotionId)
-			.Where(row => row.DistributeFrom == from && row.DistributeTo == to)
+			.Where(row => row.DistributeDate == date)
 			.ToAsyncEnumerable()
 			.Select(row => new PromotionRebateDistribute(
 				row.Id,
-				row.DistributeFrom,
-				row.DistributeTo,
+				row.DistributeDate,
 				row.PlayerCode,
 				row.BrandId,
 				row.PromotionId,
@@ -99,14 +98,11 @@ internal class TgsRepository : ITgsRepository
 				JsonSerializer.Deserialize<RebateSettings>(row.Settings, PromotionRebateUtility.SerializerOptions)!))
 			.ToArrayAsync(cancellationToken);
 
-	public async ValueTask<bool> CheckHaveRebateDistributeAsync(Guid promotionId, DateTimeOffset from, DateTimeOffset to,
+	public async ValueTask<bool> CheckHaveRebateDistributeAsync(Guid promotionId, DateOnly date,
 		CancellationToken cancellationToken = default)
 		=> await _dbContext.PromotionRebateDistributeRows
 			.AnyAsync(x =>
-				x.PromotionId == promotionId &&
-				(x.DistributeFrom <= from && x.DistributeTo >= from ||
-				x.DistributeFrom <= to && x.DistributeTo >= to ||
-				x.DistributeFrom >= from && x.DistributeTo <= to), cancellationToken: cancellationToken);
+				x.PromotionId == promotionId && x.DistributeDate == date, cancellationToken: cancellationToken);
 
 	public IAsyncEnumerable<PlayerJoinRecord> QueryPromotionJoinPlayersAsync(IEnumerable<Guid> promotions, CancellationToken cancellationToken = default)
 	{
@@ -154,8 +150,7 @@ internal class TgsRepository : ITgsRepository
 			distributes.Select(s => new PromotionRebateDistributeRow
 			{
 				Id = s.Id,
-				DistributeFrom = s.DistributeFrom,
-				DistributeTo = s.DistributeTo,
+				DistributeDate = s.DistributeDate,
 				PlayerCode = s.PlayerCode,
 				Bonus = s.Bonus,
 				BrandId = s.BrandId,
@@ -202,8 +197,7 @@ internal class TgsRepository : ITgsRepository
 			.Select(row => row!)
 			.Select(row => new PromotionRebateDistribute(
 				row.Id,
-				row.DistributeFrom,
-				row.DistributeTo,
+				row.DistributeDate,
 				row.PlayerCode,
 				row.BrandId,
 				row.PromotionId,

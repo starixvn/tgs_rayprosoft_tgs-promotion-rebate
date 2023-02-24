@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Tgs.BrandCertificate.Clients;
 using Tgs.MessageQueue;
@@ -84,7 +83,7 @@ public class DistributeDailyRebateBonusTests
 			.Returns(fakePromotionServiceClient);
 
 		_ = fakeTgsRepository
-			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate), Arg.Is(startDate))
+			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate.ToDateOnly()))
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		// Act
@@ -116,7 +115,7 @@ public class DistributeDailyRebateBonusTests
 			fakeBrandServiceClient,
 			NullLogger<DistributeDailyRebateBonusCommandService>.Instance);
 
-		var date = DateTimeOffset.Parse("2022-12-8 8:00:00+00");
+		var date = DateTimeOffset.Parse("2022-12-8 0:00:00-08");
 
 		var command = new DistributeDailyRebateBonusCommand(date.UtcDateTime);
 
@@ -156,8 +155,8 @@ public class DistributeDailyRebateBonusTests
 				{
 					Id = promotionId,
 					BrandId = brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2022-12-5 16:00:00+00").UtcDateTime,
-						DateTimeOffset.Parse("2022-12-10 16:00:00+00").UtcDateTime)
+					EventDuring = new During(DateTimeOffset.Parse("2022-12-5 00:00:00-08").UtcDateTime,
+						DateTimeOffset.Parse("2022-12-10 00:00:00-08").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
 
@@ -171,7 +170,7 @@ public class DistributeDailyRebateBonusTests
 			.Returns(fakePromotionServiceClient);
 
 		_ = fakeTgsRepository
-			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate), Arg.Is(startDate))
+			.GetRebateUnDistributedAsync(Arg.Is(promotionId), Arg.Is(startDate.ToDateOnly()))
 			.Returns(Array.Empty<PromotionRebateDistribute>());
 
 		// Act
@@ -181,8 +180,8 @@ public class DistributeDailyRebateBonusTests
 		_ = fakeTgsRepository.Received(1)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-7 8:00:00+00").UtcDateTime),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-8 8:00:00+00").UtcDateTime));
+				 Arg.Is(DateTimeOffset.Parse("2022-12-7 00:00:00-08").UtcDateTime),
+				 Arg.Is(DateTimeOffset.Parse("2022-12-8 00:00:00-08").UtcDateTime));
 	}
 
 }

@@ -25,7 +25,5 @@ public partial class PromotionRebateDistributeRow
 
     public string Status { get; set; } = null!;
 
-    public DateTime DistributeFrom { get; set; }
-
-    public DateTime DistributeTo { get; set; }
+    public DateOnly DistributeDate { get; set; }
 }
