@@ -8,11 +8,11 @@ namespace Tgs.Services.Rebate.ApplicationServices;
 
 internal class CalculateDailyRebateCommandService : ICommandService<CalculateDailyRebateCommand>
 {
-	private readonly ITgsRepository _tgsRepository;
-	private readonly IPromotionClient _promotionClient;
-	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly IBrandServiceClient _brandServiceClient;
 	private readonly ILogger<CalculateDailyRebateCommandService> _logger;
+	private readonly IPromotionClient _promotionClient;
+	private readonly IPromotionServiceClient _promotionServiceClient;
+	private readonly ITgsRepository _tgsRepository;
 
 	public CalculateDailyRebateCommandService(
 		ITgsRepository tgsRepository,
@@ -23,12 +23,14 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 	{
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
 		_promotionClient = promotionClient ?? throw new ArgumentNullException(nameof(promotionClient));
-		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionServiceClient =
+			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_brandServiceClient = brandServiceClient ?? throw new ArgumentNullException(nameof(brandServiceClient));
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
-	public async ValueTask ExecuteAsync(CalculateDailyRebateCommand command, CancellationToken cancellationToken = default)
+	public async ValueTask ExecuteAsync(CalculateDailyRebateCommand command,
+		CancellationToken cancellationToken = default)
 	{
 		var hour = command.SettleDateTime.Hour;
 
@@ -50,9 +52,12 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 			return;
 		}
 
-		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
+		var reportDate = new DateTimeOffset(command.SettleDateTime)
+			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
 
-		var brandIds = await _brandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken).ToArrayAsync(cancellationToken);
+		var brandIds = await _brandServiceClient
+			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)
+			.ToArrayAsync(cancellationToken);
 
 		var statistics = await _tgsRepository
 			.QueryGameRoundStatisticsAsync(reportDate, brandIds, cancellationToken)
@@ -60,12 +65,13 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 			.ToLookupAsync(s => s.BrandId, cancellationToken)
 			.ConfigureAwait(false);
 
-		var promotions = await new[] {
-			_promotionServiceClient
-				.ListPromotionsByPromotionTypeAsync("TurnoverRebate", cancellationToken),
-			_promotionServiceClient
-				.ListPromotionsByPromotionTypeAsync("TurnoverRebateWeekly", cancellationToken)
-		}.ToAsyncEnumerable()
+		var promotions = await new[]
+			{
+				_promotionServiceClient
+					.ListPromotionsByPromotionTypeAsync("TurnoverRebate", cancellationToken),
+				_promotionServiceClient
+					.ListPromotionsByPromotionTypeAsync("TurnoverRebateWeekly", cancellationToken)
+			}.ToAsyncEnumerable()
 			.Merge()
 			.Do(info => _logger.LogDebug("Promotion: {info}", info))
 			.Where(x => x.EventDuring.From <= reportDate.UtcDateTime && x.EventDuring.To >= reportDate.UtcDateTime)

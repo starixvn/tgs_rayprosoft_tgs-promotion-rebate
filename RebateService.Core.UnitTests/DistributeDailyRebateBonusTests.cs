@@ -183,5 +183,4 @@ public class DistributeDailyRebateBonusTests
 				 Arg.Is(DateTimeOffset.Parse("2022-12-7 00:00:00-08").UtcDateTime),
 				 Arg.Is(DateTimeOffset.Parse("2022-12-8 00:00:00-08").UtcDateTime));
 	}
-
 }

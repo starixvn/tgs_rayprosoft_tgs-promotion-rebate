@@ -9,11 +9,11 @@ namespace Tgs.Services.Rebate.ApplicationServices;
 
 internal class DistributeDailyRebateBonusCommandService : ICommandService<DistributeDailyRebateBonusCommand>
 {
-	private readonly IPromotionServiceClient _promotionServiceClient;
-	private readonly ITgsRepository _tgsRepository;
-	private readonly IServiceProvider _serviceProvider;
 	private readonly IBrandServiceClient _brandServiceClient;
 	private readonly ILogger<DistributeDailyRebateBonusCommandService> _logger;
+	private readonly IPromotionServiceClient _promotionServiceClient;
+	private readonly IServiceProvider _serviceProvider;
+	private readonly ITgsRepository _tgsRepository;
 
 	public DistributeDailyRebateBonusCommandService(
 		IPromotionServiceClient promotionServiceClient,
@@ -22,14 +22,16 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 		IBrandServiceClient brandServiceClient,
 		ILogger<DistributeDailyRebateBonusCommandService> logger)
 	{
-		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionServiceClient =
+			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
 		_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 		_brandServiceClient = brandServiceClient ?? throw new ArgumentNullException(nameof(brandServiceClient));
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
-	public async ValueTask ExecuteAsync(DistributeDailyRebateBonusCommand command, CancellationToken cancellationToken = default)
+	public async ValueTask ExecuteAsync(DistributeDailyRebateBonusCommand command,
+		CancellationToken cancellationToken = default)
 	{
 		var hour = command.ScheduleDateTime.Hour;
 
@@ -52,21 +54,26 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 			return;
 		}
 
-		var reportDateTime = new DateTimeOffset(command.ScheduleDateTime).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
+		var reportDateTime = new DateTimeOffset(command.ScheduleDateTime)
+			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
 
-		var brandIds = await _brandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken).ToArrayAsync(cancellationToken);
+		var brandIds = await _brandServiceClient
+			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)
+			.ToArrayAsync(cancellationToken);
 
 		var promotions = await _promotionServiceClient
 			.ListPromotionsByPromotionTypeAsync("TurnoverRebate", cancellationToken)
 			.Where(x => brandIds.Contains(x.BrandId))
-			.Where(x => x.EventDuring.From <= reportDateTime.UtcDateTime && x.EventDuring.To >= reportDateTime.UtcDateTime)
+			.Where(x => x.EventDuring.From <= reportDateTime.UtcDateTime &&
+				x.EventDuring.To >= reportDateTime.UtcDateTime)
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false);
 
 		var distributors = promotions.ToAsyncEnumerable()
 			.SelectAwait(async info =>
 			{
-				var promotion = await _promotionServiceClient.ListPromotionsAsync(info.BrandId, cancellationToken).FirstAsync(x => x.Id == info.Id, cancellationToken: cancellationToken);
+				var promotion = await _promotionServiceClient.ListPromotionsAsync(info.BrandId, cancellationToken)
+					.FirstAsync(x => x.Id == info.Id, cancellationToken);
 
 				return ActivatorUtilities.CreateInstance<PromotionDistributor>(
 					_serviceProvider,
@@ -77,10 +84,8 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 			});
 
 		await foreach (var distributor in distributors.ConfigureAwait(false))
-		{
 			await distributor.ProcessDistributesAsync(
 				_tgsRepository,
 				cancellationToken).ConfigureAwait(false);
-		}
 	}
 }

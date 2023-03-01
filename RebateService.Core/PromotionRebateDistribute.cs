@@ -1,4 +1,5 @@
 ﻿namespace Tgs.Services.Rebate;
+
 public record PromotionRebateDistribute(
 	Guid Id,
 	DateOnly DistributeDate,

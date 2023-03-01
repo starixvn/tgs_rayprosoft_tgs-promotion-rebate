@@ -4,18 +4,15 @@ namespace Tgs.Services.Rebate;
 
 internal class CycleManager
 {
-	private readonly DateTime _startTime;
-	private readonly DateTime _endTime;
 	private readonly CrontabSchedule _crontab;
+	private readonly DateTime _endTime;
+	private readonly DateTime _startTime;
 
 	public CycleManager(string cronExpression, DateTime startTime, DateTime endTime)
 	{
 		_crontab = CrontabSchedule.Parse(
 			cronExpression,
-			new CrontabSchedule.ParseOptions
-			{
-				IncludingSeconds = false
-			});
+			new() { IncludingSeconds = false });
 		_startTime = startTime;
 		_endTime = endTime;
 	}

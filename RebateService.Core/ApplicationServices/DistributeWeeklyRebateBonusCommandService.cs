@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Tgs.BrandCertificate.Clients;
@@ -10,11 +9,11 @@ namespace Tgs.Services.Rebate.ApplicationServices;
 
 internal class DistributeWeeklyRebateBonusCommandService : ICommandService<DistributeWeeklyRebateBonusCommand>
 {
-	private readonly IPromotionServiceClient _promotionServiceClient;
-	private readonly ITgsRepository _tgsRepository;
-	private readonly IServiceProvider _serviceProvider;
 	private readonly IBrandServiceClient _brandServiceClient;
 	private readonly ILogger<DistributeWeeklyRebateBonusCommandService> _logger;
+	private readonly IPromotionServiceClient _promotionServiceClient;
+	private readonly IServiceProvider _serviceProvider;
+	private readonly ITgsRepository _tgsRepository;
 
 	public DistributeWeeklyRebateBonusCommandService(
 		IPromotionServiceClient promotionServiceClient,
@@ -23,14 +22,16 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 		IBrandServiceClient brandServiceClient,
 		ILogger<DistributeWeeklyRebateBonusCommandService> logger)
 	{
-		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionServiceClient =
+			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
 		_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 		_brandServiceClient = brandServiceClient;
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
-	public async ValueTask ExecuteAsync(DistributeWeeklyRebateBonusCommand command, CancellationToken cancellationToken = default)
+	public async ValueTask ExecuteAsync(DistributeWeeklyRebateBonusCommand command,
+		CancellationToken cancellationToken = default)
 	{
 		var hour = command.ScheduleDateTime.Hour;
 
@@ -53,11 +54,14 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 			return;
 		}
 
-		var scheduleDateTime = new DateTimeOffset(command.ScheduleDateTime).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
+		var scheduleDateTime = new DateTimeOffset(command.ScheduleDateTime)
+			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
 		var weekFrom = scheduleDateTime.AddDays(-7).GetMonday();
 		var weekTo = scheduleDateTime.AddDays(-7).GetSunday();
 
-		var brandIds = await _brandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken).ToArrayAsync(cancellationToken);
+		var brandIds = await _brandServiceClient
+			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)
+			.ToArrayAsync(cancellationToken);
 
 		var promotions = await _promotionServiceClient
 			.ListPromotionsByPromotionTypeAsync("TurnoverRebateWeekly", cancellationToken)
@@ -68,10 +72,13 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 			)
 			.SelectAwait(async info =>
 			{
-				var promotion = await _promotionServiceClient.ListPromotionsAsync(info.BrandId, cancellationToken).FirstAsync(x => x.Id == info.Id, cancellationToken: cancellationToken);
+				var promotion = await _promotionServiceClient.ListPromotionsAsync(info.BrandId, cancellationToken)
+					.FirstAsync(x => x.Id == info.Id, cancellationToken);
 
-				var startTime = new DateTimeOffset(info.EventDuring.From).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
-				var endTime = new DateTimeOffset(info.EventDuring.To).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
+				var startTime =
+					new DateTimeOffset(info.EventDuring.From).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
+				var endTime =
+					new DateTimeOffset(info.EventDuring.To).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
 
 				return (
 					Info: info,

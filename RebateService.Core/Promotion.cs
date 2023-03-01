@@ -1,4 +1,5 @@
 ﻿namespace Tgs.Services.Rebate;
+
 public record Promotion(
 	Guid Id,
 	Guid BrandId,

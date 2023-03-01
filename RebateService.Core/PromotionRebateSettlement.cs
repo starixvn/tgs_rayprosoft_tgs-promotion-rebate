@@ -1,4 +1,5 @@
 ﻿namespace Tgs.Services.Rebate;
+
 public record PromotionRebateSettlement(
 	string PlayerCode,
 	Guid BrandId,

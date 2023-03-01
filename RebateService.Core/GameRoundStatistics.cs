@@ -1,4 +1,5 @@
 ﻿namespace Tgs.Services.Rebate;
+
 public record GameRoundStatistics(
 	string PlayerCode,
 	int VipLevel,

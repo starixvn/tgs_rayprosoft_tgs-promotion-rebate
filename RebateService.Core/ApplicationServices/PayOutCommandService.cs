@@ -6,9 +6,9 @@ namespace Tgs.Services.Rebate.ApplicationServices;
 
 internal class PayOutCommandService : ICommandService<PayOutCommand>
 {
-	private readonly ITgsRepository _tgsRepository;
-	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly ILogger<PayOutCommandService> _logger;
+	private readonly IPromotionServiceClient _promotionServiceClient;
+	private readonly ITgsRepository _tgsRepository;
 
 	public PayOutCommandService(
 		ITgsRepository tgsRepository,
@@ -16,7 +16,8 @@ internal class PayOutCommandService : ICommandService<PayOutCommand>
 		ILogger<PayOutCommandService> logger)
 	{
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
-		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionServiceClient =
+			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 

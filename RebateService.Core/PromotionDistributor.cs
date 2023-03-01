@@ -8,14 +8,14 @@ namespace Tgs.Services.Rebate;
 
 internal class PromotionDistributor
 {
+	private readonly DateTimeOffset _endDate;
+	private readonly IMessageSender _messageSender;
 	private readonly PromotionMainInfo _promotionMainInfo;
+	private readonly IPromotionServiceClient _promotionServiceClient;
+	private readonly ISerialNumberGenerator _serialNumberGenerator;
 
 	private readonly DateTimeOffset _startDate;
-	private readonly DateTimeOffset _endDate;
 	private readonly decimal _usedAmount;
-	private readonly ISerialNumberGenerator _serialNumberGenerator;
-	private readonly IMessageSender _messageSender;
-	private readonly IPromotionServiceClient _promotionServiceClient;
 
 	public PromotionDistributor(
 		PromotionMainInfo promotionMainInfo,
@@ -30,9 +30,11 @@ internal class PromotionDistributor
 		_startDate = startDate;
 		_endDate = endDate;
 		_usedAmount = usedAmount;
-		_serialNumberGenerator = serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
+		_serialNumberGenerator =
+			serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
 		_messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
-		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionServiceClient =
+			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 	}
 
 	public async Task ProcessDistributesAsync(
@@ -44,10 +46,10 @@ internal class PromotionDistributor
 		var firstDate = new DateOnly(_startDate.Year, _startDate.Month, _startDate.Day);
 
 		var distributes = tgsRepository.QueryPromotionRebateSettlementsAsync(
-			_promotionMainInfo.Id,
-			_startDate.UtcDateTime,
-			_endDate.AddDays(1).UtcDateTime,
-			cancellationToken)
+				_promotionMainInfo.Id,
+				_startDate.UtcDateTime,
+				_endDate.AddDays(1).UtcDateTime,
+				cancellationToken)
 			.GroupBy(settle => settle.PlayerCode)
 			.SelectAwait(async g => new
 			{
@@ -61,7 +63,6 @@ internal class PromotionDistributor
 				(await g
 					.FirstAsync(cancellationToken)
 					.ConfigureAwait(false)).Settings
-
 			})
 			.Where(sum => sum.TotalTurnover >= sum.Settings.TurnoverThreshold)
 			.Select(sum => new
@@ -82,9 +83,9 @@ internal class PromotionDistributor
 					: sum.CalculateBonus;
 
 				if (_promotionMainInfo.PromotionLimitAmount is not null &&
-					usedAmount > _promotionMainInfo.PromotionLimitAmount)
+				    usedAmount > _promotionMainInfo.PromotionLimitAmount)
 				{
-					return new PromotionRebateDistribute(
+					return new(
 						await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
 						firstDate,
 						sum.PlayerCode,
@@ -97,32 +98,36 @@ internal class PromotionDistributor
 
 				usedAmount += bonusAmount;
 
-				return new PromotionRebateDistribute(
-						await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
-						firstDate,
-						sum.PlayerCode,
-						sum.BrandId,
-						_promotionMainInfo.Id,
-						bonusAmount,
-						bonusAmount * sum.Settings.TurnoverMultiple,
-						sum.Settings);
+				return new(
+					await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
+					firstDate,
+					sum.PlayerCode,
+					sum.BrandId,
+					_promotionMainInfo.Id,
+					bonusAmount,
+					bonusAmount * sum.Settings.TurnoverMultiple,
+					sum.Settings);
 			})
 			.ToEnumerable()
 			.ToArray();
 
 		if (distributes.Length > 0)
 		{
-			if (!await tgsRepository.CheckHaveRebateDistributeAsync(_promotionMainInfo.Id, firstDate, cancellationToken))
+			if (!await tgsRepository.CheckHaveRebateDistributeAsync(_promotionMainInfo.Id, firstDate,
+				    cancellationToken))
 			{
 				await tgsRepository.SavePromotionRebateDistributesAsync(
 					distributes,
 					cancellationToken).ConfigureAwait(false);
 
-				await _promotionServiceClient.UpdatePromotionUsedAmountAsync(_promotionMainInfo.Id, usedAmount, distributes.Max(x => x.Id), cancellationToken);
+				await _promotionServiceClient.UpdatePromotionUsedAmountAsync(_promotionMainInfo.Id, usedAmount,
+					distributes.Max(x => x.Id), cancellationToken);
 			}
 			else
 			{
-				distributes = await tgsRepository.GetRebateUnDistributedAsync(_promotionMainInfo.Id, firstDate, cancellationToken);
+				distributes =
+					await tgsRepository.GetRebateUnDistributedAsync(_promotionMainInfo.Id, firstDate,
+						cancellationToken);
 			}
 
 			var conditionHash = new DateOnly(_startDate.Year, _startDate.Month, _startDate.Day).DayNumber;
