@@ -49,7 +49,7 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 
 		if (timeSpanMinutesJson?.TryGetValue(hour, out var timeSpanMinutes) == null || timeSpanMinutes == null)
 		{
-			_logger.LogWarning("Can't found the timeSpanMinutes value from json. (PromotionDailyRebateMinutes)");
+			_logger.LogInformation("Can't found the timeSpanMinutes value from json. (PromotionDailyRebateMinutes)");
 
 			return;
 		}

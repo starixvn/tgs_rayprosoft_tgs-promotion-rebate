@@ -47,7 +47,7 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 
 		if (timeSpanMinutesJson?.TryGetValue(hour, out var timeSpanMinutes) == null || timeSpanMinutes == null)
 		{
-			_logger.LogWarning("Can't found the timeSpanMinutes value from json. (PromotionDailySettleMinutes)");
+			_logger.LogInformation("Can't found the timeSpanMinutes value from json. (PromotionDailySettleMinutes)");
 
 			return;
 		}

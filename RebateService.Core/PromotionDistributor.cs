@@ -85,7 +85,7 @@ internal class PromotionDistributor
 				if (_promotionMainInfo.PromotionLimitAmount is not null &&
 				    usedAmount > _promotionMainInfo.PromotionLimitAmount)
 				{
-					return new(
+					return new PromotionRebateDistribute(
 						await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
 						firstDate,
 						sum.PlayerCode,
@@ -98,7 +98,7 @@ internal class PromotionDistributor
 
 				usedAmount += bonusAmount;
 
-				return new(
+				return new PromotionRebateDistribute(
 					await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
 					firstDate,
 					sum.PlayerCode,
