@@ -1,6 +1,6 @@
 ﻿namespace Tgs.Promotion.RebateService.Client;
 
-public class PromotionOptions
+public class PromotionRebateOptions
 {
 	public Uri Url { get; set; } = default!;
 }

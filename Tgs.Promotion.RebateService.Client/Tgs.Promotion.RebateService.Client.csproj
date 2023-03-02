@@ -4,7 +4,7 @@
 		<TargetFramework>net7.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Version>0.0.1</Version>
+		<Version>0.0.2</Version>
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-promotion-rebate</PackageProjectUrl>
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-promotion-rebate.git</RepositoryUrl>
 	</PropertyGroup>
