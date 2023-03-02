@@ -59,6 +59,7 @@ push-nuget:
   only:
     - main
   script:
+    - dotnet restore
     - dotnet pack -c $BuildConfiguration "Tgs.Promotion.RebateService.Client/Tgs.Promotion.RebateService.Client.csproj" --no-restore
     - dotnet nuget push "Tgs.Promotion.RebateService.Client/bin/$BuildConfiguration/*.nupkg" -s "raypro-baget" -k $NugetApiKey --skip-duplicate
   artifacts:
