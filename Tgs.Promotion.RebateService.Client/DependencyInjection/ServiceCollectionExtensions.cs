@@ -12,12 +12,10 @@ public static class ServiceCollectionExtensions
 			.AddOptions<PromotionRebateOptions>()
 			.Configure(configure)
 			.Services
-			.AddHttpClient<PromotionRebateClient>((sp, c) =>
+			.AddHttpClient<IPromotionRebateClient, PromotionRebateClient>((sp, c) =>
 			{
 				var options = sp.GetRequiredService<IOptions<PromotionRebateOptions>>().Value;
 
 				c.BaseAddress = options.Url;
-			})
-			.Services
-			.AddTransient<IPromotionRebateClient, PromotionRebateClient>();
+			}).Services;
 }
