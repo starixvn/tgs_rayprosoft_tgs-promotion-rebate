@@ -7,14 +7,14 @@ public static class ServiceCollectionExtensions
 {
 	public static IServiceCollection AddPromotionRebateClient(
 		this IServiceCollection services,
-		Action<PromotionOptions, IServiceProvider> configure)
+		Action<PromotionRebateOptions, IServiceProvider> configure)
 		=> services
-			.AddOptions<PromotionOptions>()
+			.AddOptions<PromotionRebateOptions>()
 			.Configure(configure)
 			.Services
 			.AddHttpClient<PromotionRebateClient>((sp, c) =>
 			{
-				var options = sp.GetRequiredService<IOptions<PromotionOptions>>().Value;
+				var options = sp.GetRequiredService<IOptions<PromotionRebateOptions>>().Value;
 
 				c.BaseAddress = options.Url;
 			})
