@@ -6,7 +6,6 @@ using Tgs.Promotion.Clients;
 using Tgs.SerialNumberGenerator;
 using Tgs.Services.Rebate;
 using Tgs.Services.Rebate.ApplicationServices;
-using Xunit;
 
 namespace RebateService.Core.UnitTests;
 
@@ -66,11 +65,11 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
 			{
-				new PromotionMainInfo()
+				new PromotionMainInfo
 				{
 					Id = promotionId,
-					BrandId= brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2022-11-30 16:00:00+00").UtcDateTime,
+					BrandId = brandId,
+					EventDuring = new(DateTimeOffset.Parse("2022-11-30 16:00:00+00").UtcDateTime,
 						DateTimeOffset.Parse("2022-12-30 16:00:00+00").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
@@ -97,8 +96,8 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakeTgsRepository.Received(1)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-5 00:00:00+08").UtcDateTime),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-12 00:00:00+08").UtcDateTime));
+				Arg.Is(DateTimeOffset.Parse("2022-12-5 00:00:00+08").UtcDateTime),
+				Arg.Is(DateTimeOffset.Parse("2022-12-12 00:00:00+08").UtcDateTime));
 	}
 
 	[Fact]
@@ -155,11 +154,11 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
 			{
-				new PromotionMainInfo()
+				new PromotionMainInfo
 				{
 					Id = promotionId,
-					BrandId= brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2022-11-30 16:00:00+00").UtcDateTime,
+					BrandId = brandId,
+					EventDuring = new(DateTimeOffset.Parse("2022-11-30 16:00:00+00").UtcDateTime,
 						DateTimeOffset.Parse("2022-12-30 16:00:00+00").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
@@ -186,8 +185,8 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakeTgsRepository.Received(1)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-1 00:00:00+08").UtcDateTime),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-5 00:00:00+08").UtcDateTime));
+				Arg.Is(DateTimeOffset.Parse("2022-12-1 00:00:00+08").UtcDateTime),
+				Arg.Is(DateTimeOffset.Parse("2022-12-5 00:00:00+08").UtcDateTime));
 	}
 
 	[Fact]
@@ -244,11 +243,11 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
 			{
-				new PromotionMainInfo()
+				new PromotionMainInfo
 				{
 					Id = promotionId,
-					BrandId= brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2022-11-30 16:00:00+00").UtcDateTime,
+					BrandId = brandId,
+					EventDuring = new(DateTimeOffset.Parse("2022-11-30 16:00:00+00").UtcDateTime,
 						DateTimeOffset.Parse("2022-12-30 16:00:00+00").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
@@ -275,8 +274,8 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakeTgsRepository.Received(1)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-26 00:00:00+08").UtcDateTime),
-				 Arg.Is(DateTimeOffset.Parse("2023-01-01 00:00:00+08").UtcDateTime));
+				Arg.Is(DateTimeOffset.Parse("2022-12-26 00:00:00+08").UtcDateTime),
+				Arg.Is(DateTimeOffset.Parse("2023-01-01 00:00:00+08").UtcDateTime));
 	}
 
 	[Fact]
@@ -334,11 +333,11 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
 			{
-				new PromotionMainInfo()
+				new PromotionMainInfo
 				{
 					Id = promotionId,
-					BrandId= brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2022-12-01 00:00:00+08").UtcDateTime,
+					BrandId = brandId,
+					EventDuring = new(DateTimeOffset.Parse("2022-12-01 00:00:00+08").UtcDateTime,
 						DateTimeOffset.Parse("2022-12-31 00:00:00+08").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
@@ -365,8 +364,8 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakeTgsRepository.Received(1)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-05 00:00:00-08").UtcDateTime),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-12 00:00:00-08").UtcDateTime));
+				Arg.Is(DateTimeOffset.Parse("2022-12-05 00:00:00-08").UtcDateTime),
+				Arg.Is(DateTimeOffset.Parse("2022-12-12 00:00:00-08").UtcDateTime));
 	}
 
 	[Fact]
@@ -424,11 +423,11 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
 			{
-				new PromotionMainInfo()
+				new PromotionMainInfo
 				{
 					Id = promotionId,
-					BrandId= brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2022-12-01 00:00:00-08").UtcDateTime,
+					BrandId = brandId,
+					EventDuring = new(DateTimeOffset.Parse("2022-12-01 00:00:00-08").UtcDateTime,
 						DateTimeOffset.Parse("2022-12-31 00:00:00-08").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
@@ -455,8 +454,8 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakeTgsRepository.Received(1)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-01 00:00:00-08").UtcDateTime),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-05 00:00:00-08").UtcDateTime));
+				Arg.Is(DateTimeOffset.Parse("2022-12-01 00:00:00-08").UtcDateTime),
+				Arg.Is(DateTimeOffset.Parse("2022-12-05 00:00:00-08").UtcDateTime));
 	}
 
 	[Fact]
@@ -514,11 +513,11 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
 			{
-				new PromotionMainInfo()
+				new PromotionMainInfo
 				{
 					Id = promotionId,
-					BrandId= brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2022-12-01 00:00:00-08").UtcDateTime,
+					BrandId = brandId,
+					EventDuring = new(DateTimeOffset.Parse("2022-12-01 00:00:00-08").UtcDateTime,
 						DateTimeOffset.Parse("2022-12-31 00:00:00-08").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
@@ -545,8 +544,8 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakeTgsRepository.Received(1)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Is(DateTimeOffset.Parse("2022-12-26 00:00:00-08").UtcDateTime),
-				 Arg.Is(DateTimeOffset.Parse("2023-01-01 00:00:00-08").UtcDateTime));
+				Arg.Is(DateTimeOffset.Parse("2022-12-26 00:00:00-08").UtcDateTime),
+				Arg.Is(DateTimeOffset.Parse("2023-01-01 00:00:00-08").UtcDateTime));
 	}
 
 	[Fact]
@@ -600,11 +599,11 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
 			{
-				new PromotionMainInfo()
+				new PromotionMainInfo
 				{
 					Id = promotionId,
-					BrandId= brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2023-01-01 00:00:00-08").UtcDateTime,
+					BrandId = brandId,
+					EventDuring = new(DateTimeOffset.Parse("2023-01-01 00:00:00-08").UtcDateTime,
 						DateTimeOffset.Parse("2023-01-31 00:00:00-08").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
@@ -624,8 +623,8 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakeTgsRepository.Received(0)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Any<DateTime>(),
-				 Arg.Any<DateTime>());
+				Arg.Any<DateTime>(),
+				Arg.Any<DateTime>());
 	}
 
 	[Fact]
@@ -679,11 +678,11 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
 			{
-				new PromotionMainInfo()
+				new PromotionMainInfo
 				{
 					Id = promotionId,
-					BrandId= brandId,
-					EventDuring = new During(DateTimeOffset.Parse("2023-01-01 00:00:00-08").UtcDateTime,
+					BrandId = brandId,
+					EventDuring = new(DateTimeOffset.Parse("2023-01-01 00:00:00-08").UtcDateTime,
 						DateTimeOffset.Parse("2023-01-31 00:00:00-08").UtcDateTime)
 				}
 			}.ToAsyncEnumerable());
@@ -703,8 +702,7 @@ public class DistributeWeeklyRebateBonusTests
 		_ = fakeTgsRepository.Received(0)
 			.QueryPromotionRebateSettlementsAsync(
 				Arg.Any<Guid>(),
-				 Arg.Any<DateTime>(),
-				 Arg.Any<DateTime>());
+				Arg.Any<DateTime>(),
+				Arg.Any<DateTime>());
 	}
-
 }

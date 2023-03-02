@@ -1,6 +1,6 @@
 ﻿using System.Text;
-using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Tgs.Promotion.RebateService.Client;
 
@@ -17,9 +17,7 @@ internal class PromotionRebateClient : IPromotionRebateClient
 	private readonly HttpClient _httpClient;
 
 	public PromotionRebateClient(HttpClient httpClient)
-	{
-		_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-	}
+		=> _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
 	public async Task SettleAsync(DateOnly reportDate, int hour)
 	{
