@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Tgs.BrandCertificate.Clients;
 using Tgs.Promotion.Clients;
 using Tgs.ServiceUtility;
 
@@ -6,51 +9,93 @@ namespace Tgs.Services.Rebate.ApplicationServices;
 
 internal class DistributeWeeklyRebateBonusCommandService : ICommandService<DistributeWeeklyRebateBonusCommand>
 {
+	private readonly IBrandServiceClient _brandServiceClient;
+	private readonly ILogger<DistributeWeeklyRebateBonusCommandService> _logger;
 	private readonly IPromotionServiceClient _promotionServiceClient;
-	private readonly ITgsRepository _tgsRepository;
 	private readonly IServiceProvider _serviceProvider;
+	private readonly ITgsRepository _tgsRepository;
 
 	public DistributeWeeklyRebateBonusCommandService(
 		IPromotionServiceClient promotionServiceClient,
 		ITgsRepository tgsRepository,
-		IServiceProvider serviceProvider)
+		IServiceProvider serviceProvider,
+		IBrandServiceClient brandServiceClient,
+		ILogger<DistributeWeeklyRebateBonusCommandService> logger)
 	{
-		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionServiceClient =
+			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
 		_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+		_brandServiceClient = brandServiceClient;
+		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
-	public async ValueTask ExecuteAsync(DistributeWeeklyRebateBonusCommand command, CancellationToken cancellationToken = default)
+	public async ValueTask ExecuteAsync(DistributeWeeklyRebateBonusCommand command,
+		CancellationToken cancellationToken = default)
 	{
-		var scheduleTime = command.ScheduleDate.ToDateTime(TimeOnly.MinValue);
+		var hour = command.ScheduleDateTime.Hour;
+
+		var value = await _tgsRepository.GetTimeSpanMinutesAsync("PromotionWeeklyRebateMinutes", cancellationToken);
+
+		if (value == null)
+		{
+			_logger.LogError(@"Settings key ""PromotionWeeklyRebateMinutes"" is null.");
+
+			return;
+		}
+
+		var timeSpanMinutesJson = JsonSerializer.Deserialize<Dictionary<int, int?>>(value);
+
+
+		if (timeSpanMinutesJson?.TryGetValue(hour, out var timeSpanMinutes) == null || timeSpanMinutes == null)
+		{
+			_logger.LogInformation("Can't found the timeSpanMinutes value from json. (PromotionWeeklyRebateMinutes)");
+
+			return;
+		}
+
+		var scheduleDateTime = new DateTimeOffset(command.ScheduleDateTime)
+			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
+		var weekFrom = scheduleDateTime.AddDays(-7).GetMonday();
+		var weekTo = scheduleDateTime.AddDays(-7).GetSunday();
+
+		var brandIds = await _brandServiceClient
+			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)
+			.ToArrayAsync(cancellationToken);
 
 		var promotions = await _promotionServiceClient
 			.ListPromotionsByPromotionTypeAsync("TurnoverRebateWeekly", cancellationToken)
-			.Select(info =>
+			.Where(x => brandIds.Contains(x.BrandId))
+			.Where(x => x.EventDuring.From >= weekFrom.UtcDateTime && x.EventDuring.From <= weekTo.UtcDateTime ||
+				x.EventDuring.To >= weekFrom.UtcDateTime && x.EventDuring.To <= weekTo.UtcDateTime ||
+				x.EventDuring.From < weekFrom.UtcDateTime && x.EventDuring.To > weekTo.UtcDateTime
+			)
+			.SelectAwait(async info =>
 			{
-				var startTime = new DateTimeOffset(info.EventDuring.From)
-					.ToOffset(TimeSpan.FromHours(8D));
-				var endTime = new DateTimeOffset(info.EventDuring.To)
-					.ToOffset(TimeSpan.FromHours(8D));
+				var promotion = await _promotionServiceClient.ListPromotionsAsync(info.BrandId, cancellationToken)
+					.FirstAsync(x => x.Id == info.Id, cancellationToken);
 
-				var cycleMgr = new CycleManager("0 0 * * Mon", startTime.DateTime, endTime.DateTime);
+				var startTime =
+					new DateTimeOffset(info.EventDuring.From).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
+				var endTime =
+					new DateTimeOffset(info.EventDuring.To).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
 
 				return (
 					Info: info,
-					Mgr: cycleMgr,
-					PreviousTriggerDate: DateOnly.FromDateTime(cycleMgr.GetPreviousOccurrence(scheduleTime)?.AddDays(-1D) ?? startTime.DateTime),
-					NextTriggerDate: DateOnly.FromDateTime(cycleMgr.GetNextOccurrence(scheduleTime) ?? endTime.DateTime));
+					PreviousTriggerDate: weekFrom < startTime ? startTime : weekFrom,
+					NextTriggerDate: weekTo > endTime ? endTime : weekTo,
+					promotion.UsedAmount);
 			})
-			.Where(tup => tup.NextTriggerDate == command.ScheduleDate)
 			.ToArrayAsync(cancellationToken)
-			.ConfigureAwait(false)!;
+			.ConfigureAwait(false);
 
 		var distributors = promotions.ToAsyncEnumerable()
 			.Select(tup => ActivatorUtilities.CreateInstance<PromotionDistributor>(
 				_serviceProvider,
 				tup.Info,
 				tup.PreviousTriggerDate,
-				tup.NextTriggerDate));
+				tup.NextTriggerDate,
+				tup.UsedAmount));
 
 		await foreach (var distributor in distributors.ConfigureAwait(false))
 			await distributor.ProcessDistributesAsync(

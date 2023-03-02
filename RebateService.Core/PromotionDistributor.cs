@@ -8,54 +8,67 @@ namespace Tgs.Services.Rebate;
 
 internal class PromotionDistributor
 {
-	private readonly PromotionMainInfo _promotionMainInfo;
-	private readonly DateOnly _startDate;
-	private readonly DateOnly _endDate;
-	private readonly ISerialNumberGenerator _serialNumberGenerator;
+	private readonly DateTimeOffset _endDate;
 	private readonly IMessageSender _messageSender;
+	private readonly PromotionMainInfo _promotionMainInfo;
+	private readonly IPromotionServiceClient _promotionServiceClient;
+	private readonly ISerialNumberGenerator _serialNumberGenerator;
+
+	private readonly DateTimeOffset _startDate;
+	private readonly decimal _usedAmount;
 
 	public PromotionDistributor(
 		PromotionMainInfo promotionMainInfo,
-		DateOnly startDate,
-		DateOnly endDate,
+		DateTimeOffset startDate,
+		DateTimeOffset endDate,
+		decimal usedAmount,
 		ISerialNumberGenerator serialNumberGenerator,
-		IMessageSender messageSender)
+		IMessageSender messageSender,
+		IPromotionServiceClient promotionServiceClient)
 	{
 		_promotionMainInfo = promotionMainInfo ?? throw new ArgumentNullException(nameof(promotionMainInfo));
 		_startDate = startDate;
 		_endDate = endDate;
-		_serialNumberGenerator = serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
+		_usedAmount = usedAmount;
+		_serialNumberGenerator =
+			serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
 		_messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
+		_promotionServiceClient =
+			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 	}
 
 	public async Task ProcessDistributesAsync(
 		ITgsRepository tgsRepository,
 		CancellationToken cancellationToken = default)
 	{
+		var usedAmount = _usedAmount;
+
+		var firstDate = new DateOnly(_startDate.Year, _startDate.Month, _startDate.Day);
+
 		var distributes = tgsRepository.QueryPromotionRebateSettlementsAsync(
-			_promotionMainInfo.Id,
-			_startDate,
-			_endDate,
-			cancellationToken)
+				_promotionMainInfo.Id,
+				_startDate.UtcDateTime,
+				_endDate.AddDays(1).UtcDateTime,
+				cancellationToken)
 			.GroupBy(settle => settle.PlayerCode)
 			.SelectAwait(async g => new
 			{
-				ReportDate = _endDate.AddDays(-1),
+				DistributeFrom = _startDate,
+				DistributeTo = _endDate,
 				PlayerCode = g.Key,
 				_promotionMainInfo.BrandId,
 				PromotionId = _promotionMainInfo.Id,
 				TotalTurnover = await g.SumAsync(
 					s => s.TotalTurnover, cancellationToken).ConfigureAwait(false),
-				(await g.OrderByDescending(
-					s => s.ReportDate)
+				(await g
 					.FirstAsync(cancellationToken)
 					.ConfigureAwait(false)).Settings
-
 			})
 			.Where(sum => sum.TotalTurnover >= sum.Settings.TurnoverThreshold)
 			.Select(sum => new
 			{
-				sum.ReportDate,
+				sum.DistributeFrom,
+				sum.DistributeTo,
 				sum.PlayerCode,
 				sum.BrandId,
 				sum.PromotionId,
@@ -63,45 +76,82 @@ internal class PromotionDistributor
 				sum.Settings,
 				CalculateBonus = sum.TotalTurnover * sum.Settings.Percentage / 100M
 			})
-			.SelectAwait(async sum => sum.CalculateBonus > sum.Settings.BonusAmountLimit
-				? new PromotionRebateDistribute(
+			.SelectAwait(async sum =>
+			{
+				var bonusAmount = sum.CalculateBonus > sum.Settings.BonusAmountLimit
+					? sum.Settings.BonusAmountLimit
+					: sum.CalculateBonus;
+
+				if (_promotionMainInfo.PromotionLimitAmount is not null &&
+				    usedAmount > _promotionMainInfo.PromotionLimitAmount)
+				{
+					return new PromotionRebateDistribute(
+						await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
+						firstDate,
+						sum.PlayerCode,
+						sum.BrandId,
+						_promotionMainInfo.Id,
+						0,
+						0,
+						sum.Settings);
+				}
+
+				usedAmount += bonusAmount;
+
+				return new PromotionRebateDistribute(
 					await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
-					sum.ReportDate,
+					firstDate,
 					sum.PlayerCode,
 					sum.BrandId,
 					_promotionMainInfo.Id,
-					sum.Settings.BonusAmountLimit,
-					sum.Settings.BonusAmountLimit * sum.Settings.TurnoverMultiple,
-					sum.Settings)
-				: new PromotionRebateDistribute(
-					await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
-					sum.ReportDate,
-					sum.PlayerCode,
-					sum.BrandId,
-					_promotionMainInfo.Id,
-					sum.CalculateBonus,
-					sum.CalculateBonus * sum.Settings.TurnoverMultiple,
-					sum.Settings))
+					bonusAmount,
+					bonusAmount * sum.Settings.TurnoverMultiple,
+					sum.Settings);
+			})
 			.ToEnumerable()
 			.ToArray();
 
-		await tgsRepository.SavePromotionRebateDistributesAsync(
-			distributes,
-			cancellationToken).ConfigureAwait(false);
-
-		await foreach (var dist in distributes.ToAsyncEnumerable()
-			.ConfigureAwait(false)
-			.WithCancellation(cancellationToken))
+		if (distributes.Length > 0)
 		{
-			var request = new BonusTransferRequest
+			if (!await tgsRepository.CheckHaveRebateDistributeAsync(_promotionMainInfo.Id, firstDate,
+				    cancellationToken))
 			{
-				DistributeId = dist.Id
-			};
+				await tgsRepository.SavePromotionRebateDistributesAsync(
+					distributes,
+					cancellationToken).ConfigureAwait(false);
 
-			await _messageSender.PublishAsync(
-				"tgs.rebate.ipc.payout",
-				request.ToByteArray(),
+				await _promotionServiceClient.UpdatePromotionUsedAmountAsync(_promotionMainInfo.Id, usedAmount,
+					distributes.Max(x => x.Id), cancellationToken);
+			}
+			else
+			{
+				distributes =
+					await tgsRepository.GetRebateUnDistributedAsync(_promotionMainInfo.Id, firstDate,
+						cancellationToken);
+			}
+
+			var conditionHash = new DateOnly(_startDate.Year, _startDate.Month, _startDate.Day).DayNumber;
+
+			var plan = await _promotionServiceClient.GetPromotionDistributePlanAsync(
+				_promotionMainInfo.Id,
+				conditionHash,
 				cancellationToken).ConfigureAwait(false);
+
+			await foreach (var dist in distributes.ToAsyncEnumerable()
+				               .ConfigureAwait(false)
+				               .WithCancellation(cancellationToken))
+			{
+				var request = new BonusTransferRequest
+				{
+					PlanId = plan.Id,
+					DistributeId = dist.Id
+				};
+
+				_ = await _messageSender.RequestAsync(
+					"tgs.rebate.ipc.payout",
+					request.ToByteArray(),
+					cancellationToken).ConfigureAwait(false);
+			}
 		}
 	}
 }

@@ -22,9 +22,9 @@ public class DailySettlementHandler : IMessageHandler
 	{
 		var request = DailySettlementRequest.Parser.ParseFrom(data.Span);
 
-		var command = new CalculateDailyRebateCommand(request.ReportDate);
+		var command = new CalculateDailyRebateCommand(request.SettleDateTime.ToDateTime());
 
-		_logger.LogInformation("Process daily settle {date}", request.ReportDate.ToDateOnly());
+		_logger.LogInformation("Process daily settle {date}", request.SettleDateTime.ToDateTime());
 
 		return _calculateService.ExecuteAsync(command, cancellationToken);
 	}

@@ -25,14 +25,14 @@ public class DailyDistributeBonusHandler : IMessageHandler
 	{
 		var request = RebateDistributeRequest.Parser.ParseFrom(data.Span);
 
-		_logger.LogInformation("Process daily settle {date}", request.DistributeDate.ToDateOnly());
+		_logger.LogInformation("Process daily settle {date}", request.DistributeDateTime.ToDateTime());
 
-		await Task.WhenAll(
-			_distributeService.ExecuteAsync(
-				new DistributeDailyRebateBonusCommand(request.DistributeDate),
-				cancellationToken).AsTask(),
-			_weeklyDistributeService.ExecuteAsync(
-				new DistributeWeeklyRebateBonusCommand(request.DistributeDate),
-				cancellationToken).AsTask()).ConfigureAwait(false);
+		await _distributeService.ExecuteAsync(
+			new DistributeDailyRebateBonusCommand(request.DistributeDateTime.ToDateTime()),
+			cancellationToken);
+
+		await _weeklyDistributeService.ExecuteAsync(
+			new DistributeWeeklyRebateBonusCommand(request.DistributeDateTime.ToDateTime()),
+			cancellationToken);
 	}
 }

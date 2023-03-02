@@ -18,7 +18,7 @@ public class PayOutBonusHandler : IMessageHandler
 	{
 		var request = BonusTransferRequest.Parser.ParseFrom(data.Span);
 
-		var command = new PayOutCommand(request.DistributeId);
+		var command = new PayOutCommand(request.PlanId, request.DistributeId);
 
 		return _payOutService.ExecuteAsync(command, cancellationToken);
 	}

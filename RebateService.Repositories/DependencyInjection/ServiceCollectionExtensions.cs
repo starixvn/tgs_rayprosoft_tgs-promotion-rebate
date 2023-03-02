@@ -9,10 +9,10 @@ namespace RebateService.Repositories.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddPromotionRebateRepositories(
-        this IServiceCollection services,
-        Action<IServiceProvider, DbContextOptionsBuilder> dbContextConfigure)
-        => services
-            .AddDbContext<TgsContext>(dbContextConfigure)
-            .AddTransient<ITgsRepository, TgsRepository>();
+	public static IServiceCollection AddPromotionRebateRepositories(
+		this IServiceCollection services,
+		Action<IServiceProvider, DbContextOptionsBuilder> dbContextConfigure)
+		=> services
+			.AddDbContext<TgsContext>(dbContextConfigure)
+			.AddTransient<ITgsRepository, TgsRepository>();
 }

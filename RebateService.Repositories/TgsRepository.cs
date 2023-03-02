@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-
+using Microsoft.EntityFrameworkCore;
 using RebateService.Repositories.Entities;
 
 using Tgs.Services.Rebate;
@@ -15,19 +15,18 @@ internal class TgsRepository : ITgsRepository
 		_dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
 	}
 
-	public IAsyncEnumerable<GameRoundStatistics> QueryGameRoundStatisticsAsync(DateOnly reportDate, CancellationToken cancellationToken = default)
+	public IAsyncEnumerable<GameRoundStatistics> QueryGameRoundStatisticsAsync(DateTimeOffset reportDate, Guid[] brandIds, CancellationToken cancellationToken = default)
 	{
-		var (From, To) = (
-			new DateTimeOffset(
-				reportDate.AddDays(-1).ToDateTime(TimeOnly.MinValue),
-				TimeSpan.FromHours(8D)).ToUniversalTime(),
-			new DateTimeOffset(
-				reportDate.ToDateTime(TimeOnly.MinValue),
-				TimeSpan.FromHours(8D)).ToUniversalTime());
+		var (From, To) = (reportDate, reportDate.AddDays(1));
 
 		var query = from rebate in _dbContext.PlayerGameRebateAggregates.AsQueryable()
-					where rebate.ReportDate >= From
-						&& rebate.ReportDate < To
+					where rebate.ReportDateTime >= From.UtcDateTime
+						&& rebate.ReportDateTime < To.UtcDateTime
+						&& brandIds.Contains(rebate.BrandId)
+					join brandGame in _dbContext.BrandGames on rebate.GameId equals brandGame.GameId
+					into groupJoin
+					from brandGame in groupJoin.DefaultIfEmpty()
+					where brandGame == null || brandGame.Rebate
 					group rebate.Turnover by new
 					{
 						rebate.PlayerCode,
@@ -61,12 +60,14 @@ internal class TgsRepository : ITgsRepository
 					.Date)));
 	}
 
-	public async ValueTask SavePromotionRebateSettlementsAsync(IEnumerable<PromotionRebateSettlement> settlements, CancellationToken cancellationToken = default)
+	public async ValueTask SavePromotionRebateSettlementsAsync(DateTimeOffset reportDate,
+		IEnumerable<PromotionRebateSettlement> settlements, CancellationToken cancellationToken = default)
 	{
 		await _dbContext.PromotionRebateDailyStatistics.AddRangeAsync(
 			settlements.Select(s => new PromotionRebateDailyStatistic
 			{
-				ReportDate = s.ReportDate,
+				ReportDate = new DateOnly(reportDate.Year, reportDate.Month, reportDate.Day),
+				ReportDateTime = reportDate.UtcDateTime,
 				PlayerCode = s.PlayerCode,
 				Bonus = s.Bonus,
 				BrandId = s.BrandId,
@@ -80,6 +81,29 @@ internal class TgsRepository : ITgsRepository
 		_ = await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 	}
 
+	public async ValueTask<PromotionRebateDistribute[]> GetRebateUnDistributedAsync(Guid promotionId, DateOnly date,
+		CancellationToken cancellationToken = default)
+		=> await _dbContext.PromotionRebateDistributeRows
+			.Where(row => row.PromotionId == promotionId)
+			.Where(row => row.DistributeDate == date)
+			.ToAsyncEnumerable()
+			.Select(row => new PromotionRebateDistribute(
+				row.Id,
+				row.DistributeDate,
+				row.PlayerCode,
+				row.BrandId,
+				row.PromotionId,
+				row.Bonus,
+				row.BucketAmount,
+				JsonSerializer.Deserialize<RebateSettings>(row.Settings, PromotionRebateUtility.SerializerOptions)!))
+			.ToArrayAsync(cancellationToken);
+
+	public async ValueTask<bool> CheckHaveRebateDistributeAsync(Guid promotionId, DateOnly date,
+		CancellationToken cancellationToken = default)
+		=> await _dbContext.PromotionRebateDistributeRows
+			.AnyAsync(x =>
+				x.PromotionId == promotionId && x.DistributeDate == date, cancellationToken: cancellationToken);
+
 	public IAsyncEnumerable<PlayerJoinRecord> QueryPromotionJoinPlayersAsync(IEnumerable<Guid> promotions, CancellationToken cancellationToken = default)
 	{
 		var queryPromotions = promotions.ToArray();
@@ -92,12 +116,12 @@ internal class TgsRepository : ITgsRepository
 
 	public IAsyncEnumerable<PromotionRebateSettlement> QueryPromotionRebateSettlementsAsync(
 		Guid promotionId,
-		DateOnly startDate,
-		DateOnly endDate,
+		DateTime startDate,
+		DateTime endDate,
 		CancellationToken cancellationToken = default)
 		=> _dbContext.PromotionRebateDailyStatistics.AsQueryable()
 			.Where(prds => prds.PromotionId == promotionId)
-			.Where(prds => prds.ReportDate >= startDate && prds.ReportDate < endDate)
+			.Where(prds => prds.ReportDateTime >= startDate && prds.ReportDateTime < endDate)
 			.Select(prds => new
 			{
 				prds.ReportDate,
@@ -111,7 +135,6 @@ internal class TgsRepository : ITgsRepository
 			})
 			.ToAsyncEnumerable()
 			.Select(prds => new PromotionRebateSettlement(
-				prds.ReportDate,
 				prds.PlayerCode,
 				prds.BrandId,
 				prds.PromotionId,
@@ -154,6 +177,15 @@ internal class TgsRepository : ITgsRepository
 		row.Status = "Distributed";
 
 		_ = await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+	}
+
+	public async ValueTask<string?> GetTimeSpanMinutesAsync(string key, CancellationToken cancellationToken = default)
+	{
+		return await _dbContext.Settings
+			.Where(x => x.Key == key)
+			.Select(x => x.Value)
+			.FirstOrDefaultAsync(cancellationToken);
+
 	}
 
 	public ValueTask<PromotionRebateDistribute?> GetRebateDistributeAsync(Guid distributeId, CancellationToken cancellationToken = default)

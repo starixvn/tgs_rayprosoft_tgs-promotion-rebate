@@ -19,6 +19,7 @@ public class PayOutBonusHandlerTests
 
 		var request = new BonusTransferRequest
 		{
+			PlanId = Guid.NewGuid(),
 			DistributeId = Guid.NewGuid()
 		};
 
@@ -27,6 +28,6 @@ public class PayOutBonusHandlerTests
 
 		// Assert
 		_ = fakePayOutService.Received(1)
-			.ExecuteAsync(Arg.Is(new PayOutCommand(request.DistributeId)));
+			.ExecuteAsync(Arg.Is(new PayOutCommand(request.PlanId, request.DistributeId)));
 	}
 }

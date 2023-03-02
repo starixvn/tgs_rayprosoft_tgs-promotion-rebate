@@ -20,7 +20,7 @@ public class PayOutTests
 			fakePromotionServiceClient,
 			NullLogger<PayOutCommandService>.Instance);
 
-		var command = new PayOutCommand(Guid.NewGuid());
+		var command = new PayOutCommand(Guid.NewGuid(),Guid.NewGuid());
 
 		var distribute = new PromotionRebateDistribute(
 			command.DistributeId,
@@ -42,23 +42,13 @@ public class PayOutTests
 		_ = fakeTgsRepository.GetRebateDistributeAsync(Arg.Is(command.DistributeId))
 			.Returns(distribute);
 
-		var planId = Guid.NewGuid();
-		_ = fakePromotionServiceClient.GetPromotionDistributePlanAsync(
-			Arg.Is(distribute.PromotionId),
-			Arg.Is((long)distribute.DistributeDate.DayNumber))
-			.Returns(new PromotionDistributePlanInfo(
-				planId,
-				distribute.BrandId,
-				distribute.PromotionId,
-				distribute.DistributeDate.DayNumber));
-
 		// Act
 		await sut.ExecuteAsync(command);
 
 		// Assert
 		_ = fakePromotionServiceClient.Received(1)
 			.DistributePromotionBonusAsync(
-				Arg.Is(planId),
+				Arg.Is(command.PlanId),
 				Arg.Is(distribute.PlayerCode),
 				Arg.Is(distribute.Bonus),
 				Arg.Is(distribute.BucketAmount),

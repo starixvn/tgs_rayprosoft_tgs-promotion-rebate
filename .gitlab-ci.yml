@@ -50,6 +50,24 @@ unit-test:
     reports:
       junit: ./TestReports/*-TestReport.xml
 
+push-nuget:
+  stage: publish
+  needs:
+    - job: build-code
+      artifacts: true
+    - unit-test
+  only:
+    - main
+  script:
+    - dotnet pack -c $BuildConfiguration "Tgs.Promotion.RebateService.Client/Tgs.Promotion.RebateService.Client.csproj" --no-restore
+    - dotnet nuget push "Tgs.Promotion.RebateService.Client/bin/$BuildConfiguration/*.nupkg" -s "raypro-baget" -k $NugetApiKey --skip-duplicate
+  artifacts:
+    name: Nuget
+    untracked: false
+    expire_in: "30 days"
+    paths:
+      - Tgs.Promotion.RebateService.Client/bin/$BuildConfiguration/*.nupkg
+
 push-docker-image:
   stage: publish
   needs:
