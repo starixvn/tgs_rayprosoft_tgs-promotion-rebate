@@ -19,33 +19,51 @@ internal class TgsRepository : ITgsRepository
 	{
 		var (From, To) = (reportDate, reportDate.AddDays(1));
 
-		var query = from rebate in _dbContext.PlayerGameRebateAggregates.AsQueryable()
-					where rebate.ReportDateTime >= From.UtcDateTime
-						&& rebate.ReportDateTime < To.UtcDateTime
-						&& brandIds.Contains(rebate.BrandId)
-					join brandGame in _dbContext.BrandGames on rebate.GameId equals brandGame.GameId
-					into groupJoin
-					from brandGame in groupJoin.DefaultIfEmpty()
-					where brandGame == null || brandGame.Rebate
-					group rebate.Turnover by new
-					{
-						rebate.PlayerCode,
-						rebate.VipLevel,
-						rebate.BrandId,
-						rebate.GameType,
-						rebate.GameProviderId,
-						rebate.ReportDate
-					} into g
-					select new
-					{
-						g.Key.PlayerCode,
-						VipLevel = g.Key.VipLevel!.Value,
-						g.Key.BrandId,
-						g.Key.GameProviderId,
-						g.Key.GameType,
-						TotalTurnover = g.Sum(),
-						g.Key.ReportDate
-					};
+		var query = _dbContext.PlayerGameRebateAggregates
+			.Where(x => brandIds.Contains(x.BrandId))
+			.Where(x => x.ReportDateTime >= From.UtcDateTime
+				&& x.ReportDateTime < To.UtcDateTime)
+			.GroupJoin(_dbContext.BrandGames,
+				aggregate => new
+				{
+					aggregate.BrandId,
+					aggregate.GameId
+				},
+				brandGame => new
+				{
+					brandGame.BrandId,
+					brandGame.GameId
+				},
+				(aggregate, brandGame) => new
+				{
+					aggregate,
+					brandGame
+				})
+			.SelectMany(x => x.brandGame.DefaultIfEmpty(),
+				(x, brandGame) => new
+				{
+					x.aggregate,
+					brandGame
+				})
+			.Where(x => x.brandGame == null || x.brandGame.Rebate)
+			.GroupBy(x => new
+			{
+				x.aggregate.ReportDateTime,
+				x.aggregate.BrandId,
+				x.aggregate.PlayerCode,
+				x.aggregate.GameType,
+				x.aggregate.GameProviderId,
+				x.aggregate.VipLevel
+			}, (player, list) => new
+			{
+				ReportDateTime = player.ReportDateTime!.Value,
+				BrandId = player.BrandId,
+				PlayerCode = player.PlayerCode,
+				GameType = player.GameType,
+				VipLevel = player.VipLevel!.Value,
+				GameProviderId = player.GameProviderId,
+				Turnover = list.Sum(l => l.aggregate.Turnover)
+			});
 
 		return query.ToAsyncEnumerable()
 			.Select(row => new GameRoundStatistics(
@@ -54,10 +72,8 @@ internal class TgsRepository : ITgsRepository
 				row.BrandId,
 				row.GameProviderId,
 				(GameType)row.GameType,
-				row.TotalTurnover,
-				DateOnly.FromDateTime(new DateTimeOffset(row.ReportDate)
-					.ToOffset(TimeSpan.FromHours(8D))
-					.Date)));
+				row.Turnover,
+				DateOnly.FromDateTime(row.ReportDateTime.Date)));
 	}
 
 	public async ValueTask SavePromotionRebateSettlementsAsync(DateTimeOffset reportDate,
