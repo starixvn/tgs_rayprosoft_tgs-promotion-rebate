@@ -3,6 +3,8 @@ using NSubstitute;
 using Tgs.BrandCertificate.Clients;
 using Tgs.MessageQueue;
 using Tgs.Promotion.Clients;
+using Tgs.Promotion.Clients.Models;
+using Tgs.Promotion.Clients.Models.Promotion;
 using Tgs.SerialNumberGenerator;
 using Tgs.Services.Rebate;
 using Tgs.Services.Rebate.ApplicationServices;
@@ -15,6 +17,7 @@ public class DistributeDailyRebateBonusTests
 	public async Task 輸入指定日期_發放每日反水()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
@@ -23,6 +26,7 @@ public class DistributeDailyRebateBonusTests
 		var fakeMessageSender = Substitute.For<IMessageSender>();
 
 		var sut = new DistributeDailyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -60,6 +64,20 @@ public class DistributeDailyRebateBonusTests
 				UsedAmount = 0M
 			}
 		}.ToAsyncEnumerable());
+
+		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
+			new PagedResponse<PromotionModel>
+			{
+				Valid = true,
+				Items = new[]
+				{
+					new PromotionModel
+					{
+						Id = promotionId,
+						AmountUsed = 0M
+					}
+				}
+			});
 
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"))
 			.Returns(new[]
@@ -101,6 +119,7 @@ public class DistributeDailyRebateBonusTests
 	public async Task 輸入指定日期_發放每日反水_()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
@@ -109,6 +128,7 @@ public class DistributeDailyRebateBonusTests
 		var fakeMessageSender = Substitute.For<IMessageSender>();
 
 		var sut = new DistributeDailyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -147,6 +167,20 @@ public class DistributeDailyRebateBonusTests
 				UsedAmount = 0M
 			}
 		}.ToAsyncEnumerable());
+
+		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
+			new PagedResponse<PromotionModel>
+			{
+				Valid = true,
+				Items = new[]
+				{
+					new PromotionModel
+					{
+						Id = promotionId,
+						AmountUsed = 0M
+					}
+				}
+			});
 
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"))
 			.Returns(new[]

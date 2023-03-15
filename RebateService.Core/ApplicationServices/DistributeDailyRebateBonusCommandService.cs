@@ -11,19 +11,22 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 {
 	private readonly IBrandServiceClient _brandServiceClient;
 	private readonly ILogger<DistributeDailyRebateBonusCommandService> _logger;
+	private readonly IPromotionClient _promotionClient;
 	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ITgsRepository _tgsRepository;
 
 	public DistributeDailyRebateBonusCommandService(
+		IPromotionClient promotionClient,
 		IPromotionServiceClient promotionServiceClient,
 		ITgsRepository tgsRepository,
 		IServiceProvider serviceProvider,
 		IBrandServiceClient brandServiceClient,
 		ILogger<DistributeDailyRebateBonusCommandService> logger)
 	{
-		_promotionServiceClient =
-			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionClient =
+			promotionClient ?? throw new ArgumentNullException(nameof(promotionClient));
+		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
 		_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 		_brandServiceClient = brandServiceClient ?? throw new ArgumentNullException(nameof(brandServiceClient));
@@ -72,15 +75,16 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 		var distributors = promotions.ToAsyncEnumerable()
 			.SelectAwait(async info =>
 			{
-				var promotion = await _promotionServiceClient.ListPromotionsAsync(info.BrandId, cancellationToken)
-					.FirstAsync(x => x.Id == info.Id, cancellationToken);
+				var promotionPaged = await _promotionClient.GetPromotionsAsync(new Tgs.Promotion.Clients.Models.Promotion.GetPromotionsRequest { BrandId = info.BrandId, Status = 0, ShowAll = true});
+				var promotion = promotionPaged.Items.First(x => x.Id == info.Id);
 
 				return ActivatorUtilities.CreateInstance<PromotionDistributor>(
 					_serviceProvider,
 					info,
 					reportDateTime,
 					reportDateTime,
-					promotion.UsedAmount);
+					promotion.AmountUsed,
+					promotion.Unlimited);
 			});
 
 		await foreach (var distributor in distributors.ConfigureAwait(false))
