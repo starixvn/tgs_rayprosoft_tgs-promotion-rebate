@@ -16,12 +16,14 @@ internal class PromotionDistributor
 
 	private readonly DateTimeOffset _startDate;
 	private readonly decimal _usedAmount;
+	private readonly bool _unLimited;
 
 	public PromotionDistributor(
 		PromotionMainInfo promotionMainInfo,
 		DateTimeOffset startDate,
 		DateTimeOffset endDate,
 		decimal usedAmount,
+		bool unLimited,
 		ISerialNumberGenerator serialNumberGenerator,
 		IMessageSender messageSender,
 		IPromotionServiceClient promotionServiceClient)
@@ -30,6 +32,7 @@ internal class PromotionDistributor
 		_startDate = startDate;
 		_endDate = endDate;
 		_usedAmount = usedAmount;
+		_unLimited = unLimited;
 		_serialNumberGenerator =
 			serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
 		_messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
@@ -82,7 +85,7 @@ internal class PromotionDistributor
 					? sum.Settings.BonusAmountLimit
 					: sum.CalculateBonus;
 
-				if (_promotionMainInfo.PromotionLimitAmount is not null &&
+				if (!_unLimited && _promotionMainInfo.PromotionLimitAmount is not null &&
 				    usedAmount > _promotionMainInfo.PromotionLimitAmount)
 				{
 					return new PromotionRebateDistribute(

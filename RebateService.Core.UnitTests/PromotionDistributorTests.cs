@@ -31,6 +31,7 @@ public class PromotionDistributorTests
 			scheduleStartDate,
 			scheduleEndDate,
 			0M,
+			true,
 			fakeSerialNumberGenerator,
 			fakeMessageSender,
 			fakePromotionServiceClient);
@@ -105,6 +106,7 @@ public class PromotionDistributorTests
 			scheduleStartDate,
 			scheduleEndDate,
 			0M,
+			true,
 			fakeSerialNumberGenerator,
 			fakeMessageSender,
 			fakePromotionServiceClient);
@@ -179,6 +181,7 @@ public class PromotionDistributorTests
 			scheduleStartDate,
 			scheduleEndDate,
 			0M,
+			true,
 			fakeSerialNumberGenerator,
 			fakeMessageSender,
 			fakePromotionServiceClient);
@@ -332,6 +335,7 @@ public class PromotionDistributorTests
 			scheduleStartDate,
 			scheduleEndDate,
 			0M,
+			true,
 			fakeSerialNumberGenerator,
 			fakeMessageSender,
 			fakePromotionServiceClient);

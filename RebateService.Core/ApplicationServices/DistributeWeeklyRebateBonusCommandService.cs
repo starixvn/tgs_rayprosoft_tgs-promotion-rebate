@@ -11,17 +11,21 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 {
 	private readonly IBrandServiceClient _brandServiceClient;
 	private readonly ILogger<DistributeWeeklyRebateBonusCommandService> _logger;
+	private readonly IPromotionClient _promotionClient;
 	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ITgsRepository _tgsRepository;
 
 	public DistributeWeeklyRebateBonusCommandService(
+		IPromotionClient promotionClient,
 		IPromotionServiceClient promotionServiceClient,
 		ITgsRepository tgsRepository,
 		IServiceProvider serviceProvider,
 		IBrandServiceClient brandServiceClient,
 		ILogger<DistributeWeeklyRebateBonusCommandService> logger)
 	{
+		_promotionClient =
+			promotionClient ?? throw new ArgumentNullException(nameof(promotionClient));
 		_promotionServiceClient =
 			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
@@ -90,12 +94,19 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 			.ConfigureAwait(false);
 
 		var distributors = promotions.ToAsyncEnumerable()
-			.Select(tup => ActivatorUtilities.CreateInstance<PromotionDistributor>(
-				_serviceProvider,
-				tup.Info,
-				tup.PreviousTriggerDate,
-				tup.NextTriggerDate,
-				tup.UsedAmount));
+			.SelectAwait(async p =>
+			{
+				var promotionPaged = await _promotionClient.GetPromotionsAsync(new Tgs.Promotion.Clients.Models.Promotion.GetPromotionsRequest { BrandId = p.Info.BrandId, Status = 0, ShowAll = true });
+				var promotion = promotionPaged.Items.First(x => x.Id == p.Info.Id);
+
+				return ActivatorUtilities.CreateInstance<PromotionDistributor>(
+					_serviceProvider,
+					p.Info,
+					p.PreviousTriggerDate,
+					p.NextTriggerDate,
+					promotion.AmountUsed,
+					promotion.Unlimited);
+			});
 
 		await foreach (var distributor in distributors.ConfigureAwait(false))
 			await distributor.ProcessDistributesAsync(

@@ -3,6 +3,8 @@ using NSubstitute;
 using Tgs.BrandCertificate.Clients;
 using Tgs.MessageQueue;
 using Tgs.Promotion.Clients;
+using Tgs.Promotion.Clients.Models;
+using Tgs.Promotion.Clients.Models.Promotion;
 using Tgs.SerialNumberGenerator;
 using Tgs.Services.Rebate;
 using Tgs.Services.Rebate.ApplicationServices;
@@ -15,12 +17,14 @@ public class DistributeWeeklyRebateBonusTests
 	public async Task 輸入日期_發放每週反水_With_8_Of_Time_Zone_For_Middle_Week()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new DistributeWeeklyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -74,6 +78,20 @@ public class DistributeWeeklyRebateBonusTests
 				}
 			}.ToAsyncEnumerable());
 
+		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
+			new PagedResponse<PromotionModel>
+			{
+				Valid = true,
+				Items = new[]
+				{
+					new PromotionModel
+					{
+						Id = promotionId,
+						AmountUsed = 0M
+					}
+				}
+			});
+
 		var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
 		_ = fakeServiceProvider.GetService(Arg.Is(typeof(ISerialNumberGenerator)))
 			.Returns(fakeSerialNumberGenerator);
@@ -104,12 +122,14 @@ public class DistributeWeeklyRebateBonusTests
 	public async Task 輸入日期_發放每週反水_With_8_Of_Time_Zone_For_First_Week()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new DistributeWeeklyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -163,6 +183,20 @@ public class DistributeWeeklyRebateBonusTests
 				}
 			}.ToAsyncEnumerable());
 
+		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
+			new PagedResponse<PromotionModel>
+			{
+				Valid = true,
+				Items = new[]
+				{
+					new PromotionModel
+					{
+						Id = promotionId,
+						AmountUsed = 0M
+					}
+				}
+			});
+
 		var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
 		_ = fakeServiceProvider.GetService(Arg.Is(typeof(ISerialNumberGenerator)))
 			.Returns(fakeSerialNumberGenerator);
@@ -193,12 +227,14 @@ public class DistributeWeeklyRebateBonusTests
 	public async Task 輸入日期_發放每週反水_With_8_Of_Time_Zone_For_Last_Week()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new DistributeWeeklyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -252,6 +288,20 @@ public class DistributeWeeklyRebateBonusTests
 				}
 			}.ToAsyncEnumerable());
 
+		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
+			new PagedResponse<PromotionModel>
+			{
+				Valid = true,
+				Items = new[]
+				{
+					new PromotionModel
+					{
+						Id = promotionId,
+						AmountUsed = 0M
+					}
+				}
+			});
+
 		var fakeSerialNumberGenerator = Substitute.For<ISerialNumberGenerator>();
 		_ = fakeServiceProvider.GetService(Arg.Is(typeof(ISerialNumberGenerator)))
 			.Returns(fakeSerialNumberGenerator);
@@ -282,12 +332,14 @@ public class DistributeWeeklyRebateBonusTests
 	public async Task 輸入日期_發放每週反水_With_Negative_8_Of_Time_Zone_For_Middle_Week()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new DistributeWeeklyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -329,6 +381,20 @@ public class DistributeWeeklyRebateBonusTests
 				UsedAmount = 0M
 			}
 		}.ToAsyncEnumerable());
+
+		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
+			new PagedResponse<PromotionModel>
+			{
+				Valid = true,
+				Items = new[]
+				{
+					new PromotionModel
+					{
+						Id = promotionId,
+						AmountUsed = 0M
+					}
+				}
+			});
 
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
@@ -372,12 +438,14 @@ public class DistributeWeeklyRebateBonusTests
 	public async Task 輸入日期_發放每週反水_With_Negative_8_Of_Time_Zone_For_First_Week()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new DistributeWeeklyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -419,6 +487,20 @@ public class DistributeWeeklyRebateBonusTests
 				UsedAmount = 0M
 			}
 		}.ToAsyncEnumerable());
+
+		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
+			new PagedResponse<PromotionModel>
+			{
+				Valid = true,
+				Items = new[]
+				{
+					new PromotionModel
+					{
+						Id = promotionId,
+						AmountUsed = 0M
+					}
+				}
+			});
 
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
@@ -462,12 +544,14 @@ public class DistributeWeeklyRebateBonusTests
 	public async Task 輸入日期_發放每週反水_With_Negative_8_Of_Time_Zone_For_Last_Week()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new DistributeWeeklyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -509,6 +593,20 @@ public class DistributeWeeklyRebateBonusTests
 				UsedAmount = 0M
 			}
 		}.ToAsyncEnumerable());
+
+		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
+			new PagedResponse<PromotionModel>
+			{
+				Valid = true,
+				Items = new[]
+				{
+					new PromotionModel
+					{
+						Id = promotionId,
+						AmountUsed = 0M
+					}
+				}
+			});
 
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"))
 			.Returns(new[]
@@ -552,12 +650,14 @@ public class DistributeWeeklyRebateBonusTests
 	public async Task 每週反水發放_觸發時間未到不會發放()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new DistributeWeeklyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -631,12 +731,14 @@ public class DistributeWeeklyRebateBonusTests
 	public async Task 每週反水發放_觸發時間未到不會發放_()
 	{
 		// Arrange
+		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new DistributeWeeklyRebateBonusCommandService(
+			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
