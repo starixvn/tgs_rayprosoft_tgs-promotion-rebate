@@ -124,9 +124,9 @@ internal class TgsRepository : ITgsRepository
 	{
 		var queryPromotions = promotions.ToArray();
 
-		return _dbContext.RebatePromotionJoinPlayers.AsQueryable()
+		return _dbContext.PromotionParticipants
 			.Where(joinPlayer => queryPromotions.Contains(joinPlayer.PromotionId))
-			.Select(joinPlayer => new PlayerJoinRecord(joinPlayer.PromotionId, joinPlayer.PlayerCode))
+			.Select(joinPlayer => new PlayerJoinRecord(joinPlayer.PromotionId, joinPlayer.PlayerCode!))
 			.ToAsyncEnumerable();
 	}
 
