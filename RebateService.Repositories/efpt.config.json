@@ -26,15 +26,15 @@
          "ObjectType": 0
       },
       {
+         "Name": "dbo.promotion_participants",
+         "ObjectType": 0
+      },
+      {
          "Name": "dbo.promotion_rebate_daily_statistics",
          "ObjectType": 0
       },
       {
          "Name": "dbo.promotion_rebate_distributes",
-         "ObjectType": 0
-      },
-      {
-         "Name": "dbo.rebate_promotion_join_players",
          "ObjectType": 0
       },
       {

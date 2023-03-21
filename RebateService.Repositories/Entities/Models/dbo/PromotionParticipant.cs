@@ -5,11 +5,13 @@ using System.Collections.Generic;
 
 namespace RebateService.Repositories.Entities;
 
-public partial class RebatePromotionJoinPlayer
+public partial class PromotionParticipant
 {
-    public string PlayerCode { get; set; } = null!;
-
     public Guid PromotionId { get; set; }
+
+    public string? PlayerCode { get; set; }
+
+    public int Id { get; set; }
 
     public DateTime CreatedOn { get; set; }
 }

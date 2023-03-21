@@ -19,11 +19,11 @@ public partial class TgsContext : DbContext
 
     public virtual DbSet<PlayerGameRebateAggregate> PlayerGameRebateAggregates { get; set; }
 
+    public virtual DbSet<PromotionParticipant> PromotionParticipants { get; set; }
+
     public virtual DbSet<PromotionRebateDailyStatistic> PromotionRebateDailyStatistics { get; set; }
 
     public virtual DbSet<PromotionRebateDistributeRow> PromotionRebateDistributeRows { get; set; }
-
-    public virtual DbSet<RebatePromotionJoinPlayer> RebatePromotionJoinPlayers { get; set; }
 
     public virtual DbSet<Setting> Settings { get; set; }
 
@@ -36,9 +36,9 @@ public partial class TgsContext : DbContext
 
             modelBuilder.ApplyConfiguration(new Configurations.BrandGameConfiguration());
             modelBuilder.ApplyConfiguration(new Configurations.PlayerGameRebateAggregateConfiguration());
+            modelBuilder.ApplyConfiguration(new Configurations.PromotionParticipantConfiguration());
             modelBuilder.ApplyConfiguration(new Configurations.PromotionRebateDailyStatisticConfiguration());
             modelBuilder.ApplyConfiguration(new Configurations.PromotionRebateDistributeRowConfiguration());
-            modelBuilder.ApplyConfiguration(new Configurations.RebatePromotionJoinPlayerConfiguration());
             modelBuilder.ApplyConfiguration(new Configurations.SettingConfiguration());
         OnModelCreatingPartial(modelBuilder);
     }
