@@ -76,8 +76,8 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 			)
 			.SelectAwait(async info =>
 			{
-				var promotion = await _promotionServiceClient.ListPromotionsAsync(info.BrandId, cancellationToken)
-					.FirstAsync(x => x.Id == info.Id, cancellationToken);
+				var promotionPaged = await _promotionClient.GetPromotionsAsync(new Tgs.Promotion.Clients.Models.Promotion.GetPromotionsRequest { BrandId = p.Info.BrandId, Status = 0, ShowAll = true });
+				var promotion = promotionPaged.Items.First(x => x.Id == info.Id);
 
 				var startTime =
 					new DateTimeOffset(info.EventDuring.From).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
@@ -88,7 +88,7 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 					Info: info,
 					PreviousTriggerDate: weekFrom < startTime ? startTime : weekFrom,
 					NextTriggerDate: weekTo > endTime ? endTime : weekTo,
-					promotion.UsedAmount);
+					promotion.AmountUsed);
 			})
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false);
