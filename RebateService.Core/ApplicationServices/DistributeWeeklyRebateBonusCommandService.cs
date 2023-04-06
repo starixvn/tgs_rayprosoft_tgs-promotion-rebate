@@ -76,7 +76,7 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 			)
 			.SelectAwait(async info =>
 			{
-				var promotionPaged = await _promotionClient.GetPromotionsAsync(new Tgs.Promotion.Clients.Models.Promotion.GetPromotionsRequest { BrandId = p.Info.BrandId, Status = 0, ShowAll = true });
+				var promotionPaged = await _promotionClient.GetPromotionsAsync(new Tgs.Promotion.Clients.Models.Promotion.GetPromotionsRequest { BrandId = info.BrandId, Status = 0, ShowAll = true });
 				var promotion = promotionPaged.Items.First(x => x.Id == info.Id);
 
 				var startTime =
@@ -88,25 +88,20 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 					Info: info,
 					PreviousTriggerDate: weekFrom < startTime ? startTime : weekFrom,
 					NextTriggerDate: weekTo > endTime ? endTime : weekTo,
-					promotion.AmountUsed);
+					promotion.AmountUsed,
+					promotion.Unlimited);
 			})
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false);
 
 		var distributors = promotions.ToAsyncEnumerable()
-			.SelectAwait(async p =>
-			{
-				var promotionPaged = await _promotionClient.GetPromotionsAsync(new Tgs.Promotion.Clients.Models.Promotion.GetPromotionsRequest { BrandId = p.Info.BrandId, Status = 0, ShowAll = true });
-				var promotion = promotionPaged.Items.First(x => x.Id == p.Info.Id);
-
-				return ActivatorUtilities.CreateInstance<PromotionDistributor>(
-					_serviceProvider,
-					p.Info,
-					p.PreviousTriggerDate,
-					p.NextTriggerDate,
-					promotion.AmountUsed,
-					promotion.Unlimited);
-			});
+			.Select(p => ActivatorUtilities.CreateInstance<PromotionDistributor>(
+				_serviceProvider,
+				p.Info,
+				p.PreviousTriggerDate,
+				p.NextTriggerDate,
+				p.AmountUsed,
+				p.Unlimited));
 
 		await foreach (var distributor in distributors.ConfigureAwait(false))
 			await distributor.ProcessDistributesAsync(
