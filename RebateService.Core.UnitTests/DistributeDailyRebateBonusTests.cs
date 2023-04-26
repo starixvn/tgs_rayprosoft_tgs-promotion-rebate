@@ -3,8 +3,6 @@ using NSubstitute;
 using Tgs.BrandCertificate.Clients;
 using Tgs.MessageQueue;
 using Tgs.Promotion.Clients;
-using Tgs.Promotion.Clients.Models;
-using Tgs.Promotion.Clients.Models.Promotion;
 using Tgs.SerialNumberGenerator;
 using Tgs.Services.Rebate;
 using Tgs.Services.Rebate.ApplicationServices;
@@ -17,7 +15,6 @@ public class DistributeDailyRebateBonusTests
 	public async Task 輸入指定日期_發放每日反水()
 	{
 		// Arrange
-		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
@@ -26,7 +23,6 @@ public class DistributeDailyRebateBonusTests
 		var fakeMessageSender = Substitute.For<IMessageSender>();
 
 		var sut = new DistributeDailyRebateBonusCommandService(
-			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -41,45 +37,31 @@ public class DistributeDailyRebateBonusTests
 		var brandId = Guid.NewGuid();
 		var startDate = command.ScheduleDateTime.AddDays(-1);
 
-		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
-			.Returns(
-				"""
-		{
-			"16": 480,
-			"17": 420
-		}
-		"""
-			);
-
-		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(Arg.Any<int>()).Returns(new[]
-		{
-			brandId
-		}.ToAsyncEnumerable());
-
-		_ = fakePromotionServiceClient.ListPromotionsAsync(Arg.Any<Guid>()).Returns(new[]
-		{
-			new PromotionView
+		var timeSpanMinutes = """
 			{
-				Id = promotionId,
-				UsedAmount = 0M
+				"16": 480,
+				"17": 420
 			}
-		}.ToAsyncEnumerable());
+			""";
 
-		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
-			new PagedResponse<PromotionModel>
+		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(
+			Arg.Any<string>())
+			.Returns(timeSpanMinutes);
+
+		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(
+				Arg.Any<int>())
+			.Returns(new[]
 			{
-				Valid = true,
-				Items = new[]
-				{
-					new PromotionModel
-					{
-						Id = promotionId,
-						AmountUsed = 0M
-					}
-				}
-			});
+				brandId
+			}.ToAsyncEnumerable());
 
-		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"))
+		_ = fakePromotionServiceClient.GetPromotionUsedAmountAsync(
+				Arg.Any<Guid>(),
+				Arg.Any<CancellationToken>())
+			.Returns(0m);
+
+		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(
+				Arg.Is("TurnoverRebate"))
 			.Returns(new[]
 			{
 				new PromotionMainInfo()
@@ -119,7 +101,6 @@ public class DistributeDailyRebateBonusTests
 	public async Task 輸入指定日期_發放每日反水_()
 	{
 		// Arrange
-		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
 		var fakeServiceProvider = Substitute.For<IServiceProvider>();
@@ -128,7 +109,6 @@ public class DistributeDailyRebateBonusTests
 		var fakeMessageSender = Substitute.For<IMessageSender>();
 
 		var sut = new DistributeDailyRebateBonusCommandService(
-			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeTgsRepository,
 			fakeServiceProvider,
@@ -143,44 +123,29 @@ public class DistributeDailyRebateBonusTests
 		var brandId = Guid.NewGuid();
 		var startDate = command.ScheduleDateTime.AddDays(-1);
 
-		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
-			.Returns(
-				"""
-		{
-			"16": 480,
-			"17": 420,
-			"8":-480
-		}
-		"""
-			);
-
-		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(Arg.Any<int>()).Returns(new[]
-		{
-			brandId
-		}.ToAsyncEnumerable());
-
-		_ = fakePromotionServiceClient.ListPromotionsAsync(Arg.Any<Guid>()).Returns(new[]
-		{
-			new PromotionView
+		var timeSpanMinutes = """
 			{
-				Id = promotionId,
-				UsedAmount = 0M
+				"16": 480,
+				"17": 420,
+				"8":-480
 			}
-		}.ToAsyncEnumerable());
+			""";
 
-		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
-			new PagedResponse<PromotionModel>
+		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(
+				Arg.Any<string>())
+			.Returns(timeSpanMinutes);
+
+		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(
+				Arg.Any<int>())
+			.Returns(new[]
 			{
-				Valid = true,
-				Items = new[]
-				{
-					new PromotionModel
-					{
-						Id = promotionId,
-						AmountUsed = 0M
-					}
-				}
-			});
+				brandId
+			}.ToAsyncEnumerable());
+
+		_ = fakePromotionServiceClient.GetPromotionUsedAmountAsync(
+				Arg.Any<Guid>(),
+				Arg.Any<CancellationToken>())
+			.Returns(0m);
 
 		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"))
 			.Returns(new[]
