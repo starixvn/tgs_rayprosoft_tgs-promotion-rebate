@@ -11,21 +11,16 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 {
 	private readonly IBrandServiceClient _brandServiceClient;
 	private readonly ILogger<DistributeWeeklyRebateBonusCommandService> _logger;
-	private readonly IPromotionClient _promotionClient;
 	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ITgsRepository _tgsRepository;
 
-	public DistributeWeeklyRebateBonusCommandService(
-		IPromotionClient promotionClient,
-		IPromotionServiceClient promotionServiceClient,
+	public DistributeWeeklyRebateBonusCommandService(IPromotionServiceClient promotionServiceClient,
 		ITgsRepository tgsRepository,
 		IServiceProvider serviceProvider,
 		IBrandServiceClient brandServiceClient,
 		ILogger<DistributeWeeklyRebateBonusCommandService> logger)
 	{
-		_promotionClient =
-			promotionClient ?? throw new ArgumentNullException(nameof(promotionClient));
 		_promotionServiceClient =
 			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
@@ -34,7 +29,8 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
-	public async ValueTask ExecuteAsync(DistributeWeeklyRebateBonusCommand command,
+	public async ValueTask ExecuteAsync(
+		DistributeWeeklyRebateBonusCommand command,
 		CancellationToken cancellationToken = default)
 	{
 		var hour = command.ScheduleDateTime.Hour;
@@ -49,7 +45,6 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 		}
 
 		var timeSpanMinutesJson = JsonSerializer.Deserialize<Dictionary<int, int?>>(value);
-
 
 		if (timeSpanMinutesJson?.TryGetValue(hour, out var timeSpanMinutes) == null || timeSpanMinutes == null)
 		{
@@ -76,8 +71,9 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 			)
 			.SelectAwait(async info =>
 			{
-				var promotionPaged = await _promotionClient.GetPromotionsAsync(new Tgs.Promotion.Clients.Models.Promotion.GetPromotionsRequest { BrandId = info.BrandId, Status = 0, ShowAll = true });
-				var promotion = promotionPaged.Items.First(x => x.Id == info.Id);
+				var usedAmount = await _promotionServiceClient
+					.GetPromotionUsedAmountAsync(info.Id, cancellationToken)
+					.ConfigureAwait(false);
 
 				var startTime =
 					new DateTimeOffset(info.EventDuring.From).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
@@ -85,25 +81,24 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 					new DateTimeOffset(info.EventDuring.To).ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
 
 				return (
-					Info: info,
+					MainInfo: info,
 					PreviousTriggerDate: weekFrom < startTime ? startTime : weekFrom,
 					NextTriggerDate: weekTo > endTime ? endTime : weekTo,
-					promotion.AmountUsed,
-					promotion.Unlimited);
+					UsedAmount: usedAmount);
 			})
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false);
 
-		var distributors = promotions.ToAsyncEnumerable()
+		var distributors = promotions
 			.Select(p => ActivatorUtilities.CreateInstance<PromotionDistributor>(
 				_serviceProvider,
-				p.Info,
+				p.MainInfo,
 				p.PreviousTriggerDate,
 				p.NextTriggerDate,
-				p.AmountUsed,
-				p.Unlimited));
+				p.UsedAmount,
+				p.MainInfo.PromotionLimitAmount is null));
 
-		await foreach (var distributor in distributors.ConfigureAwait(false))
+		foreach (var distributor in distributors)
 			await distributor.ProcessDistributesAsync(
 				_tgsRepository,
 				cancellationToken).ConfigureAwait(false);
