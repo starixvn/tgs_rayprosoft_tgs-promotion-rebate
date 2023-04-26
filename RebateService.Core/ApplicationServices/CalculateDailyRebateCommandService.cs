@@ -10,19 +10,16 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 {
 	private readonly IBrandServiceClient _brandServiceClient;
 	private readonly ILogger<CalculateDailyRebateCommandService> _logger;
-	private readonly IPromotionClient _promotionClient;
 	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly ITgsRepository _tgsRepository;
 
 	public CalculateDailyRebateCommandService(
 		ITgsRepository tgsRepository,
-		IPromotionClient promotionClient,
 		IPromotionServiceClient promotionServiceClient,
 		IBrandServiceClient brandServiceClient,
 		ILogger<CalculateDailyRebateCommandService> logger)
 	{
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
-		_promotionClient = promotionClient ?? throw new ArgumentNullException(nameof(promotionClient));
 		_promotionServiceClient =
 			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_brandServiceClient = brandServiceClient ?? throw new ArgumentNullException(nameof(brandServiceClient));
@@ -88,7 +85,6 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 		var settlements = promotions.ToAsyncEnumerable()
 			.Select(info => new PromotionCounter(
 				info,
-				_promotionClient,
 				_promotionServiceClient,
 				playerJoinList[info.Id].Select(j => j.PlayerCode)))
 			.Do(counter => counter.InitialAsync(cancellationToken))

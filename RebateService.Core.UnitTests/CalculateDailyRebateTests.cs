@@ -14,39 +14,43 @@ public class CalculateDailyRebateTests
 	{
 		// Arrange
 		var fakeTgsRepository = Substitute.For<ITgsRepository>();
-		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
 		var sut = new CalculateDailyRebateCommandService(
 			fakeTgsRepository,
-			fakePromotionClient,
 			fakePromotionServiceClient,
 			fakeBrandServiceClient,
 			NullLogger<CalculateDailyRebateCommandService>.Instance);
 
 		var date = DateTimeOffset.Parse("2022-11-29 16:00:00+00");
+		var timeSpanMinutes = """
+			{
+				"16": 480,
+				"17": 420
+			}
+			""";
 
 		var command = new CalculateDailyRebateCommand(date.DateTime);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
-			.Returns("""
-		{
-			"16": 480,
-			"17": 420
-		}
-		""");
+			.Returns(timeSpanMinutes);
 
-		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(Arg.Any<int>()).Returns(Array.Empty<Guid>().ToAsyncEnumerable());
+		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(Arg.Any<int>())
+			.Returns(Array.Empty<Guid>().ToAsyncEnumerable());
+
 		// Act
 		await sut.ExecuteAsync(command);
 
 		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(480)).AddDays(-1);
+		
 		// Assert
 		_ = fakeTgsRepository.Received(1)
 			.QueryGameRoundStatisticsAsync(Arg.Is(reportDate), Arg.Any<Guid[]>());
+
 		_ = fakePromotionServiceClient.Received(1)
 			.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"));
+		
 		_ = fakeTgsRepository.Received(1)
 			.SavePromotionRebateSettlementsAsync(reportDate, Arg.Any<IEnumerable<PromotionRebateSettlement>>());
 	}
