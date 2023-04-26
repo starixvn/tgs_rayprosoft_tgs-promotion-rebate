@@ -82,10 +82,11 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 					promotion.MainInfo,
 					reportDateTime,
 					reportDateTime,
-					promotion.UsedAmount,
-					promotion.MainInfo.PromotionLimitAmount is null));
+					promotion.UsedAmount));
 
-		foreach (var distributor in distributors)
+		await foreach (var distributor in distributors
+			               .ToAsyncEnumerable()
+			               .WithCancellation(cancellationToken))
 			await distributor.ProcessDistributesAsync(
 				_tgsRepository,
 				cancellationToken).ConfigureAwait(false);

@@ -90,15 +90,17 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 			.ConfigureAwait(false);
 
 		var distributors = promotions
-			.Select(p => ActivatorUtilities.CreateInstance<PromotionDistributor>(
-				_serviceProvider,
-				p.MainInfo,
-				p.PreviousTriggerDate,
-				p.NextTriggerDate,
-				p.UsedAmount,
-				p.MainInfo.PromotionLimitAmount is null));
+			.Select(p => 
+				ActivatorUtilities.CreateInstance<PromotionDistributor>(
+					_serviceProvider,
+					p.MainInfo,
+					p.PreviousTriggerDate,
+					p.NextTriggerDate,
+					p.UsedAmount));
 
-		foreach (var distributor in distributors)
+		await foreach (var distributor in distributors
+			               .ToAsyncEnumerable()
+			               .WithCancellation(cancellationToken))
 			await distributor.ProcessDistributesAsync(
 				_tgsRepository,
 				cancellationToken).ConfigureAwait(false);
