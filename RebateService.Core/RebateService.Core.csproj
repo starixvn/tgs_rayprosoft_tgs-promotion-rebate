@@ -21,10 +21,10 @@
     <PackageReference Include="NCrontab.Signed" Version="3.3.2" />
     <PackageReference Include="PhoenixToolkits.Protobuf.ExtendTypes" Version="0.0.6" />
     <PackageReference Include="System.Interactive.Async" Version="6.0.1" />
-    <PackageReference Include="Tgs.BrandCertificateClient" Version="0.0.22" />
-    <PackageReference Include="Tgs.MessageQueue" Version="2.1.1" />
-    <PackageReference Include="Tgs.Promotion.Client" Version="1.0.36" />
-    <PackageReference Include="Tgs.SerialNumberGenerator" Version="0.0.5" />
+    <PackageReference Include="Tgs.BrandCertificateClient" Version="0.0.25" />
+    <PackageReference Include="Tgs.MessageQueue" Version="2.3.0" />
+    <PackageReference Include="Tgs.Promotion.Client" Version="1.0.42" />
+    <PackageReference Include="Tgs.SerialNumberGenerator" Version="1.0.0" />
     <PackageReference Include="TGS.ServiceUtility" Version="0.2.0" />
   </ItemGroup>
 
