@@ -33,7 +33,11 @@ internal class PromotionCounter
 			throw new NullReferenceException(nameof(promotionRule));
 		}
 
-		_rebateSettings = promotionRule.CampaignDetail;
+		_rebateSettings = promotionRule.CampaignDetail with
+		{
+			VipLevels = promotionRule.VipLevels
+		};
+
 		_gameProviderIdCount = _rebateSettings.GameProviderIds?.Count() ?? 0;
 	}
 
@@ -65,5 +69,7 @@ internal class PromotionCounter
 			.ToAsyncEnumerable()
 			.Do(_ => cancellationToken.ThrowIfCancellationRequested());
 
-	internal record PromotionRule(RebateSettings CampaignDetail);
+	internal record PromotionRule(
+		RebateSettings CampaignDetail,
+		IEnumerable<int> VipLevels);
 }

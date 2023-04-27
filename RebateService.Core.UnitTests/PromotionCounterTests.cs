@@ -81,9 +81,9 @@ public class PromotionCounterTests
 						"gameProviderIds": [],
 						"turnoverLimit": 20,
 						"turnoverMultiple": 30,
-						"playerAutoJoin": true,
-						"vipLevels": [1]
-					}
+						"playerAutoJoin": true						
+					},
+					"vipLevels": [1]
 				}
 				""");
 
@@ -142,9 +142,9 @@ public class PromotionCounterTests
 						"gameProviderIds": [],
 						"bonusAmountLimit": 20,
 						"turnoverMultiple": 30,
-						"defaultJoin": false,
-						"vipLevels": [1]
-					}
+						"defaultJoin": false
+					},				
+					"vipLevels": [1]
 				}
 				""");
 
@@ -204,9 +204,9 @@ public class PromotionCounterTests
 						"gameProviderIds": [],
 						"turnoverLimit": 20,
 						"turnoverMultiple": 30,
-						"playerAutoJoin": true,
-						"vipLevels": [1]
-					}
+						"playerAutoJoin": true
+					},
+					"vipLevels": [1]
 				}
 				""");
 
@@ -268,9 +268,9 @@ public class PromotionCounterTests
 						"gameProviderIds": ["{{targetGpId}}"],
 						"turnoverLimit": 20,
 						"turnoverMultiple": 30,
-						"playerAutoJoin": true,
-						"vipLevels": [1]
-					}
+						"playerAutoJoin": true
+					},
+				"vipLevels": [1]
 				}
 				""");
 
@@ -331,9 +331,9 @@ public class PromotionCounterTests
 						"gameProviderIds": ["{{targetGpId}}"],
 						"turnoverMultiple": 30,
 						"bonusAmountLimit": 100,
-						"playerAutoJoin": true,
-						"vipLevels": [1]
-					}
+						"playerAutoJoin": true
+					},
+					"vipLevels": [1]
 				}
 				""");
 
