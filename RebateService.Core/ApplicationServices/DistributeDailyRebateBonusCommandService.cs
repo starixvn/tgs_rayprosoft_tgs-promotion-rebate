@@ -11,21 +11,17 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 {
 	private readonly IBrandServiceClient _brandServiceClient;
 	private readonly ILogger<DistributeDailyRebateBonusCommandService> _logger;
-	private readonly IPromotionClient _promotionClient;
 	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ITgsRepository _tgsRepository;
 
 	public DistributeDailyRebateBonusCommandService(
-		IPromotionClient promotionClient,
 		IPromotionServiceClient promotionServiceClient,
 		ITgsRepository tgsRepository,
 		IServiceProvider serviceProvider,
 		IBrandServiceClient brandServiceClient,
 		ILogger<DistributeDailyRebateBonusCommandService> logger)
 	{
-		_promotionClient =
-			promotionClient ?? throw new ArgumentNullException(nameof(promotionClient));
 		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
 		_serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -33,7 +29,8 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
-	public async ValueTask ExecuteAsync(DistributeDailyRebateBonusCommand command,
+	public async ValueTask ExecuteAsync(
+		DistributeDailyRebateBonusCommand command,
 		CancellationToken cancellationToken = default)
 	{
 		var hour = command.ScheduleDateTime.Hour;
@@ -48,7 +45,6 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 		}
 
 		var timeSpanMinutesJson = JsonSerializer.Deserialize<Dictionary<int, int?>>(value);
-
 
 		if (timeSpanMinutesJson?.TryGetValue(hour, out var timeSpanMinutes) == null || timeSpanMinutes == null)
 		{
@@ -69,25 +65,28 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 			.Where(x => brandIds.Contains(x.BrandId))
 			.Where(x => x.EventDuring.From <= reportDateTime.UtcDateTime &&
 				x.EventDuring.To >= reportDateTime.UtcDateTime)
+			.SelectAwait(async x => new
+			{
+				MainInfo = x,
+				UsedAmount = await _promotionServiceClient
+					.GetPromotionUsedAmountAsync(x.Id, cancellationToken)
+					.ConfigureAwait(false)
+			})
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false);
 
-		var distributors = promotions.ToAsyncEnumerable()
-			.SelectAwait(async info =>
-			{
-				var promotionPaged = await _promotionClient.GetPromotionsAsync(new Tgs.Promotion.Clients.Models.Promotion.GetPromotionsRequest { BrandId = info.BrandId, Status = 0, ShowAll = true});
-				var promotion = promotionPaged.Items.First(x => x.Id == info.Id);
-
-				return ActivatorUtilities.CreateInstance<PromotionDistributor>(
+		var distributors = promotions
+			.Select(promotion =>
+				ActivatorUtilities.CreateInstance<PromotionDistributor>(
 					_serviceProvider,
-					info,
+					promotion.MainInfo,
 					reportDateTime,
 					reportDateTime,
-					promotion.AmountUsed,
-					promotion.Unlimited);
-			});
+					promotion.UsedAmount));
 
-		await foreach (var distributor in distributors.ConfigureAwait(false))
+		await foreach (var distributor in distributors
+			               .ToAsyncEnumerable()
+			               .WithCancellation(cancellationToken))
 			await distributor.ProcessDistributesAsync(
 				_tgsRepository,
 				cancellationToken).ConfigureAwait(false);

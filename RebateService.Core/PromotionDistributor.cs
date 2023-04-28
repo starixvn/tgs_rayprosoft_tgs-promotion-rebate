@@ -16,14 +16,12 @@ internal class PromotionDistributor
 
 	private readonly DateTimeOffset _startDate;
 	private readonly decimal _usedAmount;
-	private readonly bool _unLimited;
 
 	public PromotionDistributor(
 		PromotionMainInfo promotionMainInfo,
 		DateTimeOffset startDate,
 		DateTimeOffset endDate,
 		decimal usedAmount,
-		bool unLimited,
 		ISerialNumberGenerator serialNumberGenerator,
 		IMessageSender messageSender,
 		IPromotionServiceClient promotionServiceClient)
@@ -32,12 +30,9 @@ internal class PromotionDistributor
 		_startDate = startDate;
 		_endDate = endDate;
 		_usedAmount = usedAmount;
-		_unLimited = unLimited;
-		_serialNumberGenerator =
-			serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
+		_serialNumberGenerator = serialNumberGenerator ?? throw new ArgumentNullException(nameof(serialNumberGenerator));
 		_messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
-		_promotionServiceClient =
-			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 	}
 
 	public async Task ProcessDistributesAsync(
@@ -48,7 +43,7 @@ internal class PromotionDistributor
 
 		var firstDate = new DateOnly(_startDate.Year, _startDate.Month, _startDate.Day);
 
-		var distributes = tgsRepository.QueryPromotionRebateSettlementsAsync(
+		var distributes = await tgsRepository.QueryPromotionRebateSettlementsAsync(
 				_promotionMainInfo.Id,
 				_startDate.UtcDateTime,
 				_endDate.AddDays(1).UtcDateTime,
@@ -85,8 +80,8 @@ internal class PromotionDistributor
 					? sum.Settings.BonusAmountLimit
 					: sum.CalculateBonus;
 
-				if (!_unLimited && _promotionMainInfo.PromotionLimitAmount is not null &&
-				    usedAmount > _promotionMainInfo.PromotionLimitAmount)
+				if (_promotionMainInfo.PromotionLimitAmount.HasValue 
+				    && usedAmount > _promotionMainInfo.PromotionLimitAmount.Value)
 				{
 					return new PromotionRebateDistribute(
 						await _serialNumberGenerator.GenerateAsync(cancellationToken).ConfigureAwait(false),
@@ -111,8 +106,8 @@ internal class PromotionDistributor
 					bonusAmount * sum.Settings.TurnoverMultiple,
 					sum.Settings);
 			})
-			.ToEnumerable()
-			.ToArray();
+			.ToArrayAsync(cancellationToken)
+			.ConfigureAwait(false);
 
 		if (distributes.Length > 0)
 		{

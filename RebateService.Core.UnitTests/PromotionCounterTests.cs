@@ -64,28 +64,13 @@ public class PromotionCounterTests
 			Id = Guid.NewGuid(),
 			BrandId = Guid.NewGuid()
 		};
-		var fakePromotionClient = Substitute.For<IPromotionClient>();
+
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionClient,
 			fakePromotionServiceClient,
 			Array.Empty<string>());
-
-		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
-			new PagedResponse<PromotionModel>
-			{
-				Items = new[]
-				{
-					new PromotionModel
-					{
-						Id = promotionMainInfo.Id,
-						GameProviderIds = Array.Empty<Guid>(),
-						VipLevels = new []{1}
-					}
-				}
-			});
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -96,9 +81,9 @@ public class PromotionCounterTests
 						"gameProviderIds": [],
 						"turnoverLimit": 20,
 						"turnoverMultiple": 30,
-						"playerAutoJoin": true,
-						"vipLevels": [1]
-					}
+						"playerAutoJoin": true						
+					},
+					"vipLevels": [1]
 				}
 				""");
 
@@ -140,28 +125,13 @@ public class PromotionCounterTests
 			Id = Guid.NewGuid(),
 			BrandId = Guid.NewGuid()
 		};
-		var fakePromotionClient = Substitute.For<IPromotionClient>();
+
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionClient,
 			fakePromotionServiceClient,
 			new[] { "test1" });
-
-		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
-			new PagedResponse<PromotionModel>
-			{
-				Items = new[]
-				{
-					new PromotionModel
-					{
-						Id = promotionMainInfo.Id,
-						GameProviderIds = Array.Empty<Guid>(),
-						VipLevels = new []{1}
-					}
-				}
-			});
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -172,9 +142,9 @@ public class PromotionCounterTests
 						"gameProviderIds": [],
 						"bonusAmountLimit": 20,
 						"turnoverMultiple": 30,
-						"defaultJoin": false,
-						"vipLevels": [1]
-					}
+						"defaultJoin": false
+					},				
+					"vipLevels": [1]
 				}
 				""");
 
@@ -216,28 +186,13 @@ public class PromotionCounterTests
 			Id = Guid.NewGuid(),
 			BrandId = Guid.NewGuid()
 		};
-		var fakePromotionClient = Substitute.For<IPromotionClient>();
+
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionClient,
 			fakePromotionServiceClient,
 			Array.Empty<string>());
-
-		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
-			new PagedResponse<PromotionModel>
-			{
-				Items = new[]
-				{
-					new PromotionModel
-					{
-						Id = promotionMainInfo.Id,
-						GameProviderIds = Array.Empty<Guid>(),
-						VipLevels = new []{1}
-					}
-				}
-			});
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -249,9 +204,9 @@ public class PromotionCounterTests
 						"gameProviderIds": [],
 						"turnoverLimit": 20,
 						"turnoverMultiple": 30,
-						"playerAutoJoin": true,
-						"vipLevels": [1]
-					}
+						"playerAutoJoin": true
+					},
+					"vipLevels": [1]
 				}
 				""");
 
@@ -293,30 +248,15 @@ public class PromotionCounterTests
 			Id = Guid.NewGuid(),
 			BrandId = Guid.NewGuid()
 		};
+	
 		var targetGpId = Guid.NewGuid();
 
-		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionClient,
 			fakePromotionServiceClient,
 			Array.Empty<string>());
-
-		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
-			new PagedResponse<PromotionModel>
-			{
-				Items = new[]
-				{
-					new PromotionModel
-					{
-						Id = promotionMainInfo.Id,
-						GameProviderIds = new []{targetGpId},
-						VipLevels = new []{1}
-					}
-				}
-			});
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -328,9 +268,9 @@ public class PromotionCounterTests
 						"gameProviderIds": ["{{targetGpId}}"],
 						"turnoverLimit": 20,
 						"turnoverMultiple": 30,
-						"playerAutoJoin": true,
-						"vipLevels": [1]
-					}
+						"playerAutoJoin": true
+					},
+				"vipLevels": [1]
 				}
 				""");
 
@@ -374,28 +314,12 @@ public class PromotionCounterTests
 		};
 		var targetGpId = Guid.NewGuid();
 
-		var fakePromotionClient = Substitute.For<IPromotionClient>();
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionClient,
 			fakePromotionServiceClient,
 			Array.Empty<string>());
-
-		_ = fakePromotionClient.GetPromotionsAsync(Arg.Any<GetPromotionsRequest>()).Returns(
-			new PagedResponse<PromotionModel>
-			{
-				Items = new[]
-				{
-					new PromotionModel
-					{
-						Id = promotionMainInfo.Id,
-						GameProviderIds = new []{targetGpId},
-						VipLevels = new []{1}
-					}
-				}
-			});
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -407,9 +331,9 @@ public class PromotionCounterTests
 						"gameProviderIds": ["{{targetGpId}}"],
 						"turnoverMultiple": 30,
 						"bonusAmountLimit": 100,
-						"playerAutoJoin": true,
-						"vipLevels": [1]
-					}
+						"playerAutoJoin": true
+					},
+					"vipLevels": [1]
 				}
 				""");
 

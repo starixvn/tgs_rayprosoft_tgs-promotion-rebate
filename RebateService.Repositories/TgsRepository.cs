@@ -57,11 +57,11 @@ internal class TgsRepository : ITgsRepository
 			}, (player, list) => new
 			{
 				ReportDateTime = player.ReportDateTime!.Value,
-				BrandId = player.BrandId,
-				PlayerCode = player.PlayerCode,
-				GameType = player.GameType,
+				player.BrandId,
+				player.PlayerCode,
+				player.GameType,
 				VipLevel = player.VipLevel!.Value,
-				GameProviderId = player.GameProviderId,
+				player.GameProviderId,
 				Turnover = list.Sum(l => l.aggregate.Turnover)
 			});
 

@@ -5,7 +5,6 @@ namespace Tgs.Services.Rebate;
 internal class PromotionCounter
 {
 	private readonly HashSet<string> _joinPlayers;
-	private readonly IPromotionClient _promotionClient;
 	private readonly PromotionMainInfo _promotionMainInfo;
 	private readonly IPromotionServiceClient _promotionServiceClient;
 	private int _gameProviderIdCount;
@@ -15,14 +14,11 @@ internal class PromotionCounter
 
 	public PromotionCounter(
 		PromotionMainInfo promotionMainInfo,
-		IPromotionClient promotionClient,
 		IPromotionServiceClient promotionServiceClient,
 		IEnumerable<string> joinPlayers)
 	{
 		_promotionMainInfo = promotionMainInfo ?? throw new ArgumentNullException(nameof(promotionMainInfo));
-		_promotionClient = promotionClient ?? throw new ArgumentNullException(nameof(promotionClient));
-		_promotionServiceClient =
-			promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
+		_promotionServiceClient = promotionServiceClient ?? throw new ArgumentNullException(nameof(promotionServiceClient));
 		_joinPlayers = joinPlayers.ToHashSet();
 	}
 
@@ -32,15 +28,6 @@ internal class PromotionCounter
 			_promotionMainInfo.Id,
 			cancellationToken).ConfigureAwait(false);
 
-		var promotions = await _promotionClient.GetPromotionsAsync(new()
-		{
-			BrandId = _promotionMainInfo.BrandId,
-			Type = _promotionMainInfo.PromotionType,
-			ShowAll = true
-		}).ConfigureAwait(false);
-
-		var promotion = promotions.Items.First(x => x.Id == _promotionMainInfo.Id);
-
 		if (promotionRule is null)
 		{
 			throw new NullReferenceException(nameof(promotionRule));
@@ -48,8 +35,7 @@ internal class PromotionCounter
 
 		_rebateSettings = promotionRule.CampaignDetail with
 		{
-			GameProviderIds = promotion.GameProviderIds,
-			VipLevels = promotion.VipLevels
+			VipLevels = promotionRule.VipLevels
 		};
 
 		_gameProviderIdCount = _rebateSettings.GameProviderIds?.Count() ?? 0;
@@ -83,5 +69,7 @@ internal class PromotionCounter
 			.ToAsyncEnumerable()
 			.Do(_ => cancellationToken.ThrowIfCancellationRequested());
 
-	internal record PromotionRule(RebateSettings CampaignDetail);
+	internal record PromotionRule(
+		RebateSettings CampaignDetail,
+		IEnumerable<int> VipLevels);
 }

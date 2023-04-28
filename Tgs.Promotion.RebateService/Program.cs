@@ -72,7 +72,8 @@ builder.Services
 	.AddProfileViewer()
 	.AddHealthChecks()
 	.Services
-	.AddOpenTelemetryTracing(builder => builder
+	.AddOpenTelemetry()
+	.WithTracing(tracerProviderBuilder => tracerProviderBuilder
 		.SetResourceBuilder(ResourceBuilder.CreateDefault()
 			.AddEnvironmentVariableDetector())
 		.AddSource("Tgs.*")
@@ -80,12 +81,13 @@ builder.Services
 		.AddHttpClientInstrumentation()
 		.AddProfileViewExporter()
 		.AddOtlpExporter())
-	.AddOpenTelemetryMetrics(meterBuiler => meterBuiler
+	.WithMetrics(providerBuilder => providerBuilder
 		.SetResourceBuilder(ResourceBuilder.CreateDefault()
 			.AddEnvironmentVariableDetector())
 			.AddRuntimeInstrumentation()
 			.AddAspNetCoreInstrumentation()
 			.AddOtlpExporter())
+	.Services
 	.Configure<AspNetCoreInstrumentationOptions>(options => options.Filter =
 		httpContext => !httpContext.Request.Path.HasValue
 			|| !httpContext.Request.Path.StartsWithSegments("/swagger")
