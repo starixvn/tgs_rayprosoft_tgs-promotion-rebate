@@ -5,6 +5,9 @@ public interface ITgsRepository
 	IAsyncEnumerable<GameRoundStatistics> QueryGameRoundStatisticsAsync(DateTimeOffset reportDate, Guid[] brandIds,
 		CancellationToken cancellationToken = default);
 
+	IAsyncEnumerable<GameRoundStatistics> QueryGameRoundStatisticsFromGameRoundAggregateAsync(DateTimeOffset reportDate, Guid brandId,
+		CancellationToken cancellationToken = default);
+
 	ValueTask SavePromotionRebateSettlementsAsync(DateTimeOffset reportDate,
 		IEnumerable<PromotionRebateSettlement> settlements, CancellationToken cancellationToken = default);
 

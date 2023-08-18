@@ -42,15 +42,118 @@ public class CalculateDailyRebateTests
 		// Act
 		await sut.ExecuteAsync(command);
 
-		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(480)).AddDays(-1);
-		
 		// Assert
+		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(480)).AddDays(-1);
+
 		_ = fakeTgsRepository.Received(1)
 			.QueryGameRoundStatisticsAsync(Arg.Is(reportDate), Arg.Any<Guid[]>());
 
 		_ = fakePromotionServiceClient.Received(1)
 			.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"));
 		
+		_ = fakeTgsRepository.Received(1)
+			.SavePromotionRebateSettlementsAsync(reportDate, Arg.Any<IEnumerable<PromotionRebateSettlement>>());
+	}
+
+	[Fact]
+	public async Task Settle_Rebate_Daily_From_Game_Round_Aggregate_For_India()
+	{
+		// Arrange
+		var fakeTgsRepository = Substitute.For<ITgsRepository>();
+		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
+
+		var sut = new CalculateDailyRebateCommandService(
+			fakeTgsRepository,
+			fakePromotionServiceClient,
+			fakeBrandServiceClient,
+			NullLogger<CalculateDailyRebateCommandService>.Instance);
+
+		var brandId = Guid.NewGuid();
+		var date = DateTimeOffset.Parse("2022-11-29 19:00:00+00");
+		var timeSpanMinutes = """
+			{
+				"16": 480,
+				"17": 420,
+			    "19": 330
+			}
+			""";
+
+		var command = new CalculateDailyRebateCommand(date.DateTime);
+
+		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
+			.Returns(timeSpanMinutes);
+
+		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(Arg.Any<int>())
+			.Returns(new[] { brandId }.ToAsyncEnumerable());
+
+		// Act
+		await sut.ExecuteAsync(command);
+
+		// Assert
+		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(480)).AddDays(-1);
+
+		_ = fakeTgsRepository.Received(1)
+			.QueryGameRoundStatisticsFromGameRoundAggregateAsync(Arg.Is(reportDate), Arg.Is(brandId));
+		_ = fakeTgsRepository.Received(0)
+			.QueryGameRoundStatisticsAsync(Arg.Is(reportDate), Arg.Any<Guid[]>());
+
+		_ = fakePromotionServiceClient.Received(1)
+			.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"));
+
+		_ = fakeTgsRepository.Received(1)
+			.SavePromotionRebateSettlementsAsync(reportDate, Arg.Any<IEnumerable<PromotionRebateSettlement>>());
+	}
+
+	[Fact]
+	public async Task Settle_Rebate_Daily_For_India_Time_Zone()
+	{
+		// Arrange
+		var fakeTgsRepository = Substitute.For<ITgsRepository>();
+		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
+
+		var sut = new CalculateDailyRebateCommandService(
+			fakeTgsRepository,
+			fakePromotionServiceClient,
+			fakeBrandServiceClient,
+			NullLogger<CalculateDailyRebateCommandService>.Instance);
+
+		var brandId = Guid.NewGuid();
+		var date = DateTimeOffset.Parse("2022-11-29 19:00:00+00");
+		var timeSpanMinutes = """
+			{
+				"16": 480,
+				"17": 420,
+			    "19": 330
+			}
+			""";
+
+		var command = new CalculateDailyRebateCommand(date.DateTime);
+
+		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
+			.Returns(timeSpanMinutes);
+
+		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(Arg.Is(330))
+			.Returns(new[] { brandId }.ToAsyncEnumerable());
+
+		// Act
+		await sut.ExecuteAsync(command);
+
+		// Assert
+		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(330)).AddDays(-1);
+
+		_ = fakeBrandServiceClient.Received(1).GetBrandIdsByTimeSpanMinutesAsync(Arg.Is(330));
+
+		_ = fakeTgsRepository.Received(1)
+			.QueryGameRoundStatisticsFromGameRoundAggregateAsync(Arg.Is(reportDate), Arg.Is(brandId));
+
+		_ = fakeTgsRepository.Received(0)
+			.QueryGameRoundStatisticsAsync(Arg.Is(reportDate), Arg.Any<Guid[]>());
+
+		_ = fakePromotionServiceClient.Received(1)
+			.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebate"));
+
 		_ = fakeTgsRepository.Received(1)
 			.SavePromotionRebateSettlementsAsync(reportDate, Arg.Any<IEnumerable<PromotionRebateSettlement>>());
 	}
