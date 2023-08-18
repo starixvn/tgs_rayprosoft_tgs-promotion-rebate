@@ -43,7 +43,10 @@ public class CalculateDailyRebateTests
 		await sut.ExecuteAsync(command);
 
 		// Assert
-		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(480)).AddDays(-1);
+		var reportDateTime = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(480)).AddDays(-1);
+
+		var reportDate = new DateTimeOffset(reportDateTime.Year, reportDateTime.Month, reportDateTime.Day, 0, 0,
+			0, reportDateTime.Offset);
 
 		_ = fakeTgsRepository.Received(1)
 			.QueryGameRoundStatisticsAsync(Arg.Is(reportDate), Arg.Any<Guid[]>());
@@ -91,7 +94,10 @@ public class CalculateDailyRebateTests
 		await sut.ExecuteAsync(command);
 
 		// Assert
-		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(480)).AddDays(-1);
+		var reportDateTime = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(330)).AddDays(-1);
+
+		var reportDate = new DateTimeOffset(reportDateTime.Year, reportDateTime.Month, reportDateTime.Day, 0, 0,
+			0, reportDateTime.Offset);
 
 		_ = fakeTgsRepository.Received(1)
 			.QueryGameRoundStatisticsFromGameRoundAggregateAsync(Arg.Is(reportDate), Arg.Is(brandId));
@@ -141,7 +147,10 @@ public class CalculateDailyRebateTests
 		await sut.ExecuteAsync(command);
 
 		// Assert
-		var reportDate = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(330)).AddDays(-1);
+		var reportDateTime = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(330)).AddDays(-1);
+
+		var reportDate = new DateTimeOffset(reportDateTime.Year, reportDateTime.Month, reportDateTime.Day, 0, 0,
+			0, reportDateTime.Offset);
 
 		_ = fakeBrandServiceClient.Received(1).GetBrandIdsByTimeSpanMinutesAsync(Arg.Is(330));
 
