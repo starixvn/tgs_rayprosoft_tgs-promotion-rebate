@@ -50,8 +50,11 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 			return;
 		}
 
-		var reportDate = new DateTimeOffset(command.SettleDateTime)
+		var reportDateTime = new DateTimeOffset(command.SettleDateTime)
 			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
+
+		var reportDate = new DateTimeOffset(reportDateTime.Year, reportDateTime.Month, reportDateTime.Day, 0, 0,
+			0, reportDateTime.Offset);
 
 		var brandIds = await _brandServiceClient
 			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)

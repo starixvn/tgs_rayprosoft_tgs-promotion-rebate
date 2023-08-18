@@ -54,10 +54,10 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 		}
 
 		var reportDateTime = new DateTimeOffset(command.ScheduleDateTime)
-			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
+			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
 
 		var previousDay = new DateTimeOffset(reportDateTime.Year, reportDateTime.Month, reportDateTime.Day, 0, 0,
-			0, reportDateTime.Offset).AddDays(-1);
+			0, reportDateTime.Offset);
 
 		var brandIds = await _brandServiceClient
 			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)
