@@ -82,13 +82,36 @@ internal class TgsRepository : ITgsRepository
 			.Where(x => x.BrandId == brandId)
 			.Where(x => x.From >= from.UtcDateTime
 				&& x.From < to.UtcDateTime)
+			.GroupJoin(_dbContext.BrandGames,
+				aggregate => new
+				{
+					aggregate.BrandId,
+					aggregate.GameId
+				},
+				brandGame => new
+				{
+					brandGame.BrandId,
+					brandGame.GameId
+				},
+				(aggregate, brandGame) => new
+				{
+					aggregate,
+					brandGame
+				})
+			.SelectMany(x => x.brandGame.DefaultIfEmpty(),
+				(x, brandGame) => new
+				{
+					x.aggregate,
+					brandGame
+				})
+			.Where(x => x.brandGame == null || x.brandGame.Rebate)
 			.GroupBy(x => new
 			{
-				x.BrandId,
-				x.PlayerCode,
-				x.GameType,
-				x.GameProviderId,
-				x.VipLevel
+				x.aggregate.BrandId,
+				x.aggregate.PlayerCode,
+				x.aggregate.GameType,
+				x.aggregate.GameProviderId,
+				x.aggregate.VipLevel
 			}, (player, list) => new
 			{
 				player.BrandId,
@@ -96,17 +119,18 @@ internal class TgsRepository : ITgsRepository
 				player.GameType,
 				player.VipLevel,
 				player.GameProviderId,
-				Turnover = list.Sum(l => l.Turnover)
+				Turnover = list.Sum(l => l.aggregate.Turnover)
 			});
 
-		return query.ToAsyncEnumerable()
+		return query
 			.Select(row => new GameRoundStatistics(
 				row.PlayerCode,
 				row.VipLevel,
 				row.BrandId,
 				row.GameProviderId,
 				(GameType)row.GameType,
-				row.Turnover));
+				row.Turnover))
+			.ToAsyncEnumerable();
 	}
 
 	public async ValueTask SavePromotionRebateSettlementsAsync(DateTimeOffset reportDate,
