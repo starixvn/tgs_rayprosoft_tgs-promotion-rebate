@@ -96,15 +96,9 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 
 	private async IAsyncEnumerable<GameRoundStatistics> GetGameRoundStatisticsAsync(DateTimeOffset reportDate, Guid[] brandIds, [EnumeratorCancellation] CancellationToken cancellationToken)
 	{
-		if (reportDate.Offset.TotalHours % 1 == 0)
-		{
-			await foreach (var gameRoundStatistics in _tgsRepository
-				               .QueryGameRoundStatisticsAsync(reportDate, brandIds, cancellationToken))
-			{
-				yield return gameRoundStatistics;
-			}
-		}
-		else
+		var useGameTypeRoundQuery = reportDate.Offset.TotalHours % 1 != 0;
+
+		if (useGameTypeRoundQuery)
 		{
 			foreach (var brandId in brandIds)
 			{
@@ -113,6 +107,14 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 				{
 					yield return gameRoundStatistics;
 				}
+			}
+		}
+		else
+		{
+			await foreach (var gameRoundStatistics in _tgsRepository
+				               .QueryGameRoundStatisticsAsync(reportDate, brandIds, cancellationToken))
+			{
+				yield return gameRoundStatistics;
 			}
 		}
 	}
