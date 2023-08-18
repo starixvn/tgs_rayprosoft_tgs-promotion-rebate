@@ -97,16 +97,14 @@ public class PromotionCounterTests
 				promotionMainInfo.BrandId,
 				Guid.NewGuid(),
 				GameType.Sportsbook,
-				100M,
-				DateOnly.Parse("2022-11-29")),
+				100M),
 			new GameRoundStatistics(
 				"test2",
 				1,
 				Guid.NewGuid(),
 				Guid.NewGuid(),
 				GameType.Sportsbook,
-				100M,
-				DateOnly.Parse("2022-11-29"))
+				100M)
 		};
 
 		// Act
@@ -158,16 +156,14 @@ public class PromotionCounterTests
 				promotionMainInfo.BrandId,
 				Guid.NewGuid(),
 				GameType.Sportsbook,
-				100M,
-				DateOnly.Parse("2022-11-29")),
+				100M),
 			new GameRoundStatistics(
 				"test2",
 				1,
 				promotionMainInfo.BrandId,
 				Guid.NewGuid(),
 				GameType.Sportsbook,
-				100M,
-				DateOnly.Parse("2022-11-29"))
+				100M)
 		};
 
 		// Act
@@ -220,16 +216,14 @@ public class PromotionCounterTests
 				promotionMainInfo.BrandId,
 				Guid.NewGuid(),
 				GameType.Sportsbook,
-				100M,
-				DateOnly.Parse("2022-11-29")),
+				100M),
 			new GameRoundStatistics(
 				"test2",
 				1,
 				promotionMainInfo.BrandId,
 				Guid.NewGuid(),
 				GameType.Slot,
-				100M,
-				DateOnly.Parse("2022-11-29"))
+				100M)
 		};
 
 		// Act
@@ -284,16 +278,14 @@ public class PromotionCounterTests
 				promotionMainInfo.BrandId,
 				targetGpId,
 				GameType.Slot,
-				100M,
-				DateOnly.Parse("2022-11-29")),
+				100M),
 			new GameRoundStatistics(
 				"test2",
 				1,
 				promotionMainInfo.BrandId,
 				Guid.NewGuid(),
 				GameType.Slot,
-				100M,
-				DateOnly.Parse("2022-11-29"))
+				100M)
 		};
 
 		// Act
@@ -347,16 +339,14 @@ public class PromotionCounterTests
 				promotionMainInfo.BrandId,
 				targetGpId,
 				GameType.Slot,
-				100M,
-				DateOnly.Parse("2022-11-29")),
+				100M),
 			new GameRoundStatistics(
 				"test1",
 				1,
 				promotionMainInfo.BrandId,
 				Guid.NewGuid(),
 				GameType.Slot,
-				100M,
-				DateOnly.Parse("2022-11-29"))
+				100M)
 		};
 
 		var expectedBonus = 100M * 10M / 100M;

@@ -54,9 +54,13 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 		}
 
 		var scheduleDateTime = new DateTimeOffset(command.ScheduleDateTime)
-			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
-		var weekFrom = scheduleDateTime.AddDays(-7).GetMonday();
-		var weekTo = scheduleDateTime.AddDays(-7).GetSunday();
+			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
+
+		var previousDay = new DateTimeOffset(scheduleDateTime.Year, scheduleDateTime.Month, scheduleDateTime.Day, 0, 0,
+			0, scheduleDateTime.Offset);
+
+		var weekFrom = previousDay.AddDays(-7).GetMonday();
+		var weekTo = previousDay.AddDays(-7).GetSunday();
 
 		var brandIds = await _brandServiceClient
 			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)

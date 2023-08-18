@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Tgs.BrandCertificate.Clients;
 using Tgs.Promotion.Clients;
@@ -56,8 +57,7 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)
 			.ToArrayAsync(cancellationToken);
 
-		var statistics = await _tgsRepository
-			.QueryGameRoundStatisticsAsync(reportDate, brandIds, cancellationToken)
+		var statistics = await GetGameRoundStatisticsAsync(reportDate, brandIds, cancellationToken)
 			.Do(record => _logger.LogDebug("GameRound: {record}", record))
 			.ToLookupAsync(s => s.BrandId, cancellationToken)
 			.ConfigureAwait(false);
@@ -92,5 +92,28 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 
 		await _tgsRepository.SavePromotionRebateSettlementsAsync(reportDate, settlements.ToEnumerable(),
 			cancellationToken).ConfigureAwait(false);
+	}
+
+	private async IAsyncEnumerable<GameRoundStatistics> GetGameRoundStatisticsAsync(DateTimeOffset reportDate, Guid[] brandIds, [EnumeratorCancellation] CancellationToken cancellationToken)
+	{
+		if (reportDate.Offset.TotalHours % 1 == 0)
+		{
+			await foreach (var gameRoundStatistics in _tgsRepository
+				               .QueryGameRoundStatisticsAsync(reportDate, brandIds, cancellationToken))
+			{
+				yield return gameRoundStatistics;
+			}
+		}
+		else
+		{
+			foreach (var brandId in brandIds)
+			{
+				await foreach (var gameRoundStatistics in _tgsRepository
+					               .QueryGameRoundStatisticsFromGameRoundAggregateAsync(reportDate, brandId, cancellationToken))
+				{
+					yield return gameRoundStatistics;
+				}
+			}
+		}
 	}
 }

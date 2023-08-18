@@ -54,7 +54,10 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 		}
 
 		var reportDateTime = new DateTimeOffset(command.ScheduleDateTime)
-			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value)).AddDays(-1);
+			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
+
+		var previousDay = new DateTimeOffset(reportDateTime.Year, reportDateTime.Month, reportDateTime.Day, 0, 0,
+			0, reportDateTime.Offset).AddDays(-1);
 
 		var brandIds = await _brandServiceClient
 			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)
@@ -63,8 +66,8 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 		var promotions = await _promotionServiceClient
 			.ListPromotionsByPromotionTypeAsync("TurnoverRebate", cancellationToken)
 			.Where(x => brandIds.Contains(x.BrandId))
-			.Where(x => x.EventDuring.From <= reportDateTime.UtcDateTime &&
-				x.EventDuring.To >= reportDateTime.UtcDateTime)
+			.Where(x => x.EventDuring.From <= previousDay.UtcDateTime &&
+				x.EventDuring.To >= previousDay.UtcDateTime)
 			.SelectAwait(async x => new
 			{
 				MainInfo = x,
@@ -80,8 +83,8 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 				ActivatorUtilities.CreateInstance<PromotionDistributor>(
 					_serviceProvider,
 					promotion.MainInfo,
-					reportDateTime,
-					reportDateTime,
+					previousDay,
+					previousDay,
 					promotion.UsedAmount));
 
 		await foreach (var distributor in distributors

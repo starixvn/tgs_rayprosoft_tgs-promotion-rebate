@@ -20,6 +20,7 @@
    ],
    "SelectedHandlebarsLanguage": 0,
    "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
    "Tables": [
       {
          "Name": "dbo.brand_games",
@@ -39,6 +40,10 @@
       },
       {
          "Name": "dbo.settings",
+         "ObjectType": 0
+      },
+      {
+         "Name": "report.game_type_round_aggregates",
          "ObjectType": 0
       },
       {
@@ -63,6 +68,7 @@
    "UseNodaTime": false,
    "UseNullableReferences": true,
    "UseSchemaFolders": true,
+   "UseSchemaNamespaces": false,
    "UseSpatial": false,
    "UseT4": false
 }

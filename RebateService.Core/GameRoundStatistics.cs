@@ -6,5 +6,4 @@ public record GameRoundStatistics(
 	Guid BrandId,
 	Guid GameProviderId,
 	GameType GameType,
-	decimal TotalTurnover,
-	DateOnly ReportDate);
+	decimal TotalTurnover);

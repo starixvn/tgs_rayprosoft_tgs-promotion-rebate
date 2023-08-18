@@ -56,4 +56,6 @@ public partial class PlayerGameRebateAggregate
     public decimal ValidBetAmount { get; set; }
 
     public DateTime? ReportDateTime { get; set; }
+
+    public int RoundCount { get; set; }
 }
