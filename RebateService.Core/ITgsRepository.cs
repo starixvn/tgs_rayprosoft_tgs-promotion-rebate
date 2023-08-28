@@ -26,7 +26,7 @@ public interface ITgsRepository
 	ValueTask<bool> CheckHaveRebateDistributeAsync(Guid promotionId, DateOnly date,
 		CancellationToken cancellationToken = default);
 
-	IAsyncEnumerable<PlayerJoinRecord> QueryPromotionJoinPlayersAsync(IEnumerable<Guid> promotions,
+	IAsyncEnumerable<PlayerJoinRecord> QueryPromotionJoinPlayersAsync(IEnumerable<Guid> promotions, DateTime settleEndDate,
 		CancellationToken cancellationToken = default);
 
 	ValueTask SavePromotionRebateDistributesAsync(IEnumerable<PromotionRebateDistribute> distributes,

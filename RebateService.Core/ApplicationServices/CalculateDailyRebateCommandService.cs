@@ -81,7 +81,7 @@ internal class CalculateDailyRebateCommandService : ICommandService<CalculateDai
 			.ConfigureAwait(false);
 
 		var playerJoinList = await _tgsRepository
-			.QueryPromotionJoinPlayersAsync(promotions.Select(p => p.Id), cancellationToken)
+			.QueryPromotionJoinPlayersAsync(promotions.Select(p => p.Id), reportDate.AddDays(1).UtcDateTime, cancellationToken)
 			.ToLookupAsync(j => j.PromotionId, cancellationToken)
 			.ConfigureAwait(false);
 
