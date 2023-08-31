@@ -1,0 +1,3 @@
+﻿namespace Tgs.Services.Rebate.ApplicationServices;
+
+public record SupplementCalculateDailyRebateCommand(DateTime SettleDateTime);

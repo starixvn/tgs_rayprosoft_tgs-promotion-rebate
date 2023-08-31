@@ -64,7 +64,8 @@ builder.Services
 	.AddInProcessMessageQueue(ipcConfiguration => ipcConfiguration
 		.AddHandler<DailySettlementHandler>("tgs.rebate.ipc.daily-settle")
 		.AddHandler<DailyDistributeBonusHandler>("tgs.rebate.ipc.daily-bonus")
-		.AddHandler<PayOutBonusHandler>("tgs.rebate.ipc.payout"))
+		.AddHandler<PayOutBonusHandler>("tgs.rebate.ipc.payout")
+		.AddHandler<SupplementDailySettlementHandler>("tgs.rebate.ipc.supplement-daily-settle"))
 	.AddInProcessGlobPatternExchange("tgs.rebate.ipc.*")
 	.AddNatsGlobPatternExchange("*");
 

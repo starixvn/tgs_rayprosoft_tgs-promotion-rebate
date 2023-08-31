@@ -35,4 +35,6 @@ public interface ITgsRepository
 	ValueTask SetPromotionRebateDistributedAsync(Guid distributeId, CancellationToken cancellationToken = default);
 
 	ValueTask<string?> GetTimeSpanMinutesAsync(string key, CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<string> GetPlayerCodesByDailyStatisticsReportDateAsync(DateTimeOffset reportDate, IEnumerable<Guid> promotionIds, CancellationToken cancellationToken = default);
 }

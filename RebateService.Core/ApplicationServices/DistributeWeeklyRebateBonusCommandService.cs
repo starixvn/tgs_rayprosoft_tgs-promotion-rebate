@@ -56,11 +56,11 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 		var scheduleDateTime = new DateTimeOffset(command.ScheduleDateTime)
 			.ToOffset(TimeSpan.FromMinutes(timeSpanMinutes!.Value));
 
-		var previousDay = new DateTimeOffset(scheduleDateTime.Year, scheduleDateTime.Month, scheduleDateTime.Day, 0, 0,
+		var scheduleDate = new DateTimeOffset(scheduleDateTime.Year, scheduleDateTime.Month, scheduleDateTime.Day, 0, 0,
 			0, scheduleDateTime.Offset);
 
-		var weekFrom = previousDay.AddDays(-7).GetMonday();
-		var weekTo = previousDay.AddDays(-7).GetSunday();
+		var weekFrom = scheduleDate.AddDays(-7).GetMonday();
+		var weekTo = scheduleDate.AddDays(-7).GetSunday();
 
 		var brandIds = await _brandServiceClient
 			.GetBrandIdsByTimeSpanMinutesAsync(timeSpanMinutes!.Value, cancellationToken)
@@ -93,6 +93,11 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false);
 
+		var playerJoinList = await _tgsRepository
+			.QueryPromotionJoinPlayersAsync(promotions.Select(p => p.MainInfo.Id), weekTo.AddDays(1).UtcDateTime, cancellationToken)
+			.ToLookupAsync(j => j.PromotionId, cancellationToken)
+			.ConfigureAwait(false);
+
 		var distributors = promotions
 			.Select(p => 
 				ActivatorUtilities.CreateInstance<PromotionDistributor>(
@@ -100,7 +105,8 @@ internal class DistributeWeeklyRebateBonusCommandService : ICommandService<Distr
 					p.MainInfo,
 					p.PreviousTriggerDate,
 					p.NextTriggerDate,
-					p.UsedAmount));
+					p.UsedAmount,
+					playerJoinList[p.MainInfo.Id].Select(j => j.PlayerCode)));
 
 		await foreach (var distributor in distributors
 			               .ToAsyncEnumerable()
