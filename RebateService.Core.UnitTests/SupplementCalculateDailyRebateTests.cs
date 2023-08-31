@@ -23,6 +23,8 @@ public class SupplementCalculateDailyRebateTests
 			fakeBrandServiceClient,
 			NullLogger<SupplementCalculateDailyRebateCommandService>.Instance);
 
+		var brandId = Guid.NewGuid();
+		var promotionId = Guid.NewGuid();
 		var date = DateTimeOffset.Parse("2022-11-29 16:00:00+00");
 		var timeSpanMinutes = """
 			{
@@ -30,11 +32,32 @@ public class SupplementCalculateDailyRebateTests
 				"17": 420
 			}
 			""";
-		var brandId = Guid.NewGuid();
+
 		var command = new SupplementCalculateDailyRebateCommand(date.UtcDateTime);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
 			.Returns(timeSpanMinutes);
+
+		_ = fakeTgsRepository.QueryGameRoundStatisticsAsync(Arg.Any<DateTimeOffset>(), Arg.Any<Guid[]>()).Returns(
+			new GameRoundStatistics[]
+			{
+				new GameRoundStatistics("test1", 1, brandId, Guid.NewGuid(), GameType.Sportsbook, 100M)
+			}.ToAsyncEnumerable());
+
+		_ = fakePromotionServiceClient.ListPromotionsByPromotionTypeAsync(Arg.Any<string>()).Returns(
+			new PromotionMainInfo[]
+			{
+				new PromotionMainInfo
+				{
+					Id = promotionId,
+					BrandId = brandId,
+					EventDuring = new During
+					{
+						From = DateTime.Parse("2022-10-29 16:00:00+00"),
+						To = DateTime.Parse("2022-12-29 16:00:00+00")
+					}
+				}
+			}.ToAsyncEnumerable());
 
 		_ = fakeTgsRepository.GetPlayerCodesByDailyStatisticsReportDateAsync(Arg.Any<DateTimeOffset>(), Arg.Any<Guid[]>())
 			.Returns(new[]{ "test1" }.ToAsyncEnumerable());
@@ -53,6 +76,9 @@ public class SupplementCalculateDailyRebateTests
 
 		_ = fakeTgsRepository.Received(1)
 			.QueryGameRoundStatisticsAsync(Arg.Is(reportDate), Arg.Is<Guid[]>(x => new[] { brandId }.SequenceEqual(x)));
+
+		_ = fakeTgsRepository.Received(1)
+			.GetPlayerCodesByDailyStatisticsReportDateAsync(Arg.Is(reportDate), Arg.Is<IEnumerable<Guid>>(x => new[] { promotionId }.SequenceEqual(x)));
 
 		_ = fakePromotionServiceClient.Received(1)
 			.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"));
