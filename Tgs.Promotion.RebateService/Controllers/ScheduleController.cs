@@ -87,4 +87,24 @@ public class ScheduleController : ControllerBase
 			request.ToByteArray(),
 			HttpContext.RequestAborted).ConfigureAwait(false);
 	}
+
+	[HttpPost("supplementary/{reportDate}/{utcHour}", Name = "SupplementaryDailySettlement")]
+	[SuccessStatusCode(202)]
+	public async Task SupplementaryDailySettlementAsync(
+		[FromServices] IMessageSender messageSender,
+		DateOnly reportDate,
+		int utcHour)
+	{
+		var reportDateTime = new DateTimeOffset(reportDate.Year, reportDate.Month, reportDate.Day, utcHour, 0, 0, TimeSpan.Zero);
+
+		var request = new DailySettlementRequest
+		{
+			SettleDateTime = Timestamp.FromDateTime(reportDateTime.UtcDateTime)
+		};
+
+		await messageSender.PublishAsync(
+			"tgs.rebate.ipc.supplementary-daily-settle",
+			request.ToByteArray(),
+			HttpContext.RequestAborted).ConfigureAwait(false);
+	}
 }

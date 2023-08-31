@@ -1,0 +1,63 @@
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
+using Tgs.BrandCertificate.Clients;
+using Tgs.Promotion.Clients;
+using Tgs.Services.Rebate;
+using Tgs.Services.Rebate.ApplicationServices;
+
+namespace RebateService.Core.UnitTests;
+
+public class SupplementaryCalculateDailyRebateTests
+{
+	[Fact]
+	public async Task 輸入指定日期_補統計每週反水()
+	{
+		// Arrange
+		var fakeTgsRepository = Substitute.For<ITgsRepository>();
+		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
+
+		var sut = new SupplementaryCalculateDailyRebateCommandService(
+			fakeTgsRepository,
+			fakePromotionServiceClient,
+			fakeBrandServiceClient,
+			NullLogger<SupplementaryCalculateDailyRebateCommandService>.Instance);
+
+		var date = DateTimeOffset.Parse("2022-11-29 16:00:00+00");
+		var timeSpanMinutes = """
+			{
+				"16": 480,
+				"17": 420
+			}
+			""";
+		var brandId = Guid.NewGuid();
+		var command = new SupplementaryCalculateDailyRebateCommand(date.UtcDateTime);
+
+		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
+			.Returns(timeSpanMinutes);
+
+		_ = fakeTgsRepository.GetPlayerCodesByDailyStatisticsReportDateAsync(Arg.Any<DateTimeOffset>(), Arg.Any<Guid[]>())
+			.Returns(new[]{ "test1" }.ToAsyncEnumerable());
+
+		_ = fakeBrandServiceClient.GetBrandIdsByTimeSpanMinutesAsync(Arg.Any<int>())
+			.Returns(new[]{ brandId }.ToAsyncEnumerable());
+
+		// Act
+		await sut.ExecuteAsync(command);
+
+		// Assert
+		var reportDateTime = new DateTimeOffset(command.SettleDateTime).ToOffset(TimeSpan.FromMinutes(480)).AddDays(-1);
+
+		var reportDate = new DateTimeOffset(reportDateTime.Year, reportDateTime.Month, reportDateTime.Day, 0, 0,
+			0, reportDateTime.Offset);
+
+		_ = fakeTgsRepository.Received(1)
+			.QueryGameRoundStatisticsAsync(Arg.Is(reportDate), Arg.Is<Guid[]>(x => new[] { brandId }.SequenceEqual(x)));
+
+		_ = fakePromotionServiceClient.Received(1)
+			.ListPromotionsByPromotionTypeAsync(Arg.Is("TurnoverRebateWeekly"));
+
+		_ = fakeTgsRepository.Received(1)
+			.SavePromotionRebateSettlementsAsync(Arg.Is(reportDate), Arg.Any<IEnumerable<PromotionRebateSettlement>>());
+	}
+}

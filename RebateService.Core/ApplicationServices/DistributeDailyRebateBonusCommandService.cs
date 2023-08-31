@@ -78,6 +78,11 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 			.ToArrayAsync(cancellationToken)
 			.ConfigureAwait(false);
 
+		var playerJoinList = await _tgsRepository
+			.QueryPromotionJoinPlayersAsync(promotions.Select(p => p.MainInfo.Id), previousDay.AddDays(1).UtcDateTime, cancellationToken)
+			.ToLookupAsync(j => j.PromotionId, cancellationToken)
+			.ConfigureAwait(false);
+
 		var distributors = promotions
 			.Select(promotion =>
 				ActivatorUtilities.CreateInstance<PromotionDistributor>(
@@ -85,7 +90,8 @@ internal class DistributeDailyRebateBonusCommandService : ICommandService<Distri
 					promotion.MainInfo,
 					previousDay,
 					previousDay,
-					promotion.UsedAmount));
+					promotion.UsedAmount,
+					playerJoinList[promotion.MainInfo.Id].Select(j => j.PlayerCode)));
 
 		await foreach (var distributor in distributors
 			               .ToAsyncEnumerable()

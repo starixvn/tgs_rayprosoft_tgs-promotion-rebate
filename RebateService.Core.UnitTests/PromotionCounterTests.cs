@@ -1,13 +1,9 @@
 ﻿using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
 using NSubstitute;
 using NSubstitute.Core;
-
 using Tgs.Promotion.Clients;
-using Tgs.Promotion.Clients.Models;
-using Tgs.Promotion.Clients.Models.Promotion;
 using Tgs.Services.Rebate;
 
 namespace RebateService.Core.UnitTests;
@@ -69,8 +65,7 @@ public class PromotionCounterTests
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionServiceClient,
-			Array.Empty<string>());
+			fakePromotionServiceClient);
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -115,7 +110,7 @@ public class PromotionCounterTests
 	}
 
 	[Fact]
-	public async Task 處理活動反水_如果不是預設參加_會使用參加名單過濾()
+	public async Task 處理活動反水_不管是否有參加都先計算()
 	{
 		// Arrange
 		var promotionMainInfo = new PromotionMainInfo
@@ -128,8 +123,7 @@ public class PromotionCounterTests
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionServiceClient,
-			new[] { "test1" });
+			fakePromotionServiceClient);
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -170,7 +164,18 @@ public class PromotionCounterTests
 		var actual = await sut.ProcessBatchAsync(statistics).ToArrayAsync();
 
 		// Assert
-		_ = Assert.Single(actual);
+		Assert.True(actual.Length == 2);
+		Assert.Collection(actual, 
+			x =>
+			{
+				Assert.Equal("test1", x.PlayerCode);
+				Assert.Equal(100M, x.TotalTurnover);
+			}, 
+			x =>
+			{
+				Assert.Equal("test2", x.PlayerCode);
+				Assert.Equal(100M, x.TotalTurnover);
+			});
 	}
 
 	[Fact]
@@ -187,8 +192,7 @@ public class PromotionCounterTests
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionServiceClient,
-			Array.Empty<string>());
+			fakePromotionServiceClient);
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -249,8 +253,7 @@ public class PromotionCounterTests
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionServiceClient,
-			Array.Empty<string>());
+			fakePromotionServiceClient);
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
@@ -310,8 +313,7 @@ public class PromotionCounterTests
 
 		var sut = new PromotionCounter(
 			promotionMainInfo,
-			fakePromotionServiceClient,
-			Array.Empty<string>());
+			fakePromotionServiceClient);
 
 		fakePromotionServiceClient
 			.WhenCallGetPromotionRuleAsync(promotionMainInfo.Id)
