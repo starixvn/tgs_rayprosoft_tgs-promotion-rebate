@@ -7,18 +7,18 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.Services.Rebate.ApplicationServices;
 
-internal class SupplementaryCalculateDailyRebateCommandService : ICommandService<SupplementaryCalculateDailyRebateCommand>
+internal class SupplementCalculateDailyRebateCommandService : ICommandService<SupplementCalculateDailyRebateCommand>
 {
 	private readonly IBrandServiceClient _brandServiceClient;
-	private readonly ILogger<SupplementaryCalculateDailyRebateCommandService> _logger;
+	private readonly ILogger<SupplementCalculateDailyRebateCommandService> _logger;
 	private readonly IPromotionServiceClient _promotionServiceClient;
 	private readonly ITgsRepository _tgsRepository;
 
-	public SupplementaryCalculateDailyRebateCommandService(
+	public SupplementCalculateDailyRebateCommandService(
 		ITgsRepository tgsRepository,
 		IPromotionServiceClient promotionServiceClient,
 		IBrandServiceClient brandServiceClient,
-		ILogger<SupplementaryCalculateDailyRebateCommandService> logger)
+		ILogger<SupplementCalculateDailyRebateCommandService> logger)
 	{
 		_tgsRepository = tgsRepository ?? throw new ArgumentNullException(nameof(tgsRepository));
 		_promotionServiceClient =
@@ -27,7 +27,7 @@ internal class SupplementaryCalculateDailyRebateCommandService : ICommandService
 		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 	}
 
-	public async ValueTask ExecuteAsync(SupplementaryCalculateDailyRebateCommand command,
+	public async ValueTask ExecuteAsync(SupplementCalculateDailyRebateCommand command,
 		CancellationToken cancellationToken = default)
 	{
 		var hour = command.SettleDateTime.Hour;

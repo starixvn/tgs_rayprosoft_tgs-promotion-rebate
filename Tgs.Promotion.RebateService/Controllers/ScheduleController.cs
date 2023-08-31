@@ -88,9 +88,9 @@ public class ScheduleController : ControllerBase
 			HttpContext.RequestAborted).ConfigureAwait(false);
 	}
 
-	[HttpPost("supplementary/{reportDate}/{utcHour}", Name = "SupplementaryDailySettlement")]
+	[HttpPost("supplement/{reportDate}/{utcHour}", Name = "SupplementDailySettlement")]
 	[SuccessStatusCode(202)]
-	public async Task SupplementaryDailySettlementAsync(
+	public async Task SupplementDailySettlementAsync(
 		[FromServices] IMessageSender messageSender,
 		DateOnly reportDate,
 		int utcHour)
@@ -103,7 +103,7 @@ public class ScheduleController : ControllerBase
 		};
 
 		await messageSender.PublishAsync(
-			"tgs.rebate.ipc.supplementary-daily-settle",
+			"tgs.rebate.ipc.supplement-daily-settle",
 			request.ToByteArray(),
 			HttpContext.RequestAborted).ConfigureAwait(false);
 	}

@@ -7,7 +7,7 @@ using Tgs.Services.Rebate.ApplicationServices;
 
 namespace RebateService.Core.UnitTests;
 
-public class SupplementaryCalculateDailyRebateTests
+public class SupplementCalculateDailyRebateTests
 {
 	[Fact]
 	public async Task 輸入指定日期_補統計每週反水()
@@ -17,11 +17,11 @@ public class SupplementaryCalculateDailyRebateTests
 		var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
 		var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
 
-		var sut = new SupplementaryCalculateDailyRebateCommandService(
+		var sut = new SupplementCalculateDailyRebateCommandService(
 			fakeTgsRepository,
 			fakePromotionServiceClient,
 			fakeBrandServiceClient,
-			NullLogger<SupplementaryCalculateDailyRebateCommandService>.Instance);
+			NullLogger<SupplementCalculateDailyRebateCommandService>.Instance);
 
 		var date = DateTimeOffset.Parse("2022-11-29 16:00:00+00");
 		var timeSpanMinutes = """
@@ -31,7 +31,7 @@ public class SupplementaryCalculateDailyRebateTests
 			}
 			""";
 		var brandId = Guid.NewGuid();
-		var command = new SupplementaryCalculateDailyRebateCommand(date.UtcDateTime);
+		var command = new SupplementCalculateDailyRebateCommand(date.UtcDateTime);
 
 		_ = fakeTgsRepository.GetTimeSpanMinutesAsync(Arg.Any<string>())
 			.Returns(timeSpanMinutes);
